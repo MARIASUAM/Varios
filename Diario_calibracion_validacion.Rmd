@@ -7,6 +7,8 @@ output: html_document
 
 Entiendo que agregais los datos de NetLogo para poder hacer la regresión COPLAS vs INSTAR, ¿es correcto? Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los días no parece adecuado, ¿así habrá individuos que se cuentan dos veces no? Entiendo que es difícil encontrar el parámetro adecuado, ya que no sabemos qué huevos hoy son los mismos que mañana y cuáles son nuevos... Antonio me comenta que ahí podría entrar un análisis de dinámica poblacional. Ya que la cosa se complica bastante, quizás para simplificar se podría probar con la media, el máximo y/o el mínimo, que quizás sean valores más reales que el acumulado que se ha usado hasta ahora.
 
+De hecho, "Resultados_agreg_Instar_SN.csv" tiene más individuos en L2 que en L1, lo cual no tiene sentido...
+
 # Regresión: 
 
 Por lo que veo habéis calculado una regresión lineal entre COPLAS e INSTAR, ¿por qué esperáis una relación lineal entre ambas variables? Lo ideal sería buscar la función que explica dicha relación, y ver qué tipo de función (lineal, logarítmica...) es, ¿no? En cualquier caso, quizás lo más esperable es una función logarítimica, como hace Cayuela (hace un glm, pero sobre datos en base logarítmica!). Intuitivamente, yo esperaría que para percibir cierta defoliación es necesario un número mínimo de individuos, por debajo del cual no se observa defoliación y a partir de cierta cantidad de individuos la defoliación es máxima, dando igual si ese valor se sobre pasa por mucho o por poco (si todos los árboles están defoliados da igual que haya X que X·10 individuos, por lo que ya no hay relación lineal), por lo que yo esperaría una relación exponencial.
