@@ -1,0 +1,24 @@
+---
+title: "Diario_calibracion_validacion"
+output: html_document
+---
+
+# Agregación de datos INSTAR: 
+
+Entiendo que agregais los datos de NetLogo para poder hacer la regresión COPLAS vs INSTAR, ¿es correcto? Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los días no parece adecuado, ¿así habrá individuos que se cuentan dos veces no? Entiendo que es difícil encontrar el parámetro adecuado, ya que no sabemos qué huevos hoy son los mismos que mañana y cuáles son nuevos... Antonio me comenta que ahí podría entrar un análisis de dinámica poblacional. Ya que la cosa se complica bastante, quizás para simplificar se podría probar con la media, el máximo y/o el mínimo, que quizás sean valores más reales que el acumulado que se ha usado hasta ahora.
+
+# Regresión: 
+
+Por lo que veo habéis calculado una regresión lineal entre COPLAS e INSTAR, ¿por qué esperáis una relación lineal entre ambas variables? Lo ideal sería buscar la función que explica dicha relación, y ver qué tipo de función (lineal, logarítmica...) es, ¿no? En cualquier caso, quizás lo más esperable es una función logarítimica, como hace Cayuela (hace un glm, pero sobre datos en base logarítmica!). Intuitivamente, yo esperaría que para percibir cierta defoliación es necesario un número mínimo de individuos, por debajo del cual no se observa defoliación y a partir de cierta cantidad de individuos la defoliación es máxima, dando igual si ese valor se sobre pasa por mucho o por poco (si todos los árboles están defoliados da igual que haya X que X·10 individuos, por lo que ya no hay relación lineal), por lo que yo esperaría una relación exponencial.
+
+Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregación juega un papel importante ahí, quizás al usar otra agregación sale algo mejor (esperemos). Pregunta práctica: Ya que COPLAS es en realidad una media con su varianza, entiendo que debe haber alguna manera de incluir esto en la regresión (de decirle a R cuáles son los valores de COPLAS reales, para que haga la regresión considerando media y varianza). ¿Alguna idea?
+
+# Regresión múltiple: 
+
+No entiendo esto... Si l2 viene de l1, al hacer una regresión múltiple l1+l2 (o huevos+l1, o cualquier conbinación de variables de densidad de población), ¿no se está metiendo una redundancia? Sin embargo, sí me parece que podría ser interesante hacer una regresión múltiple considerando una variable de densidad de población y una relacionada con las condiciones climáticas (tmin, tmax y/o tmedia), ya que se podría esperar que, por ejemplo, huevos+tmin sea un buen predictor de COPLAS, ¿no?
+
+# Series temporales: 
+
+No sé muy bien cuál es el objetivo de el análisis de series temporales, por lo que quizás lo que digo no tiene sentido, corregidme plis :) Según lo entiendo, queremos hacer un análisis de series temporales comparando COPLAS e INSTAR, ya que al ser variables que cambian en el tiempo debido a varios factores (condiciones de cada año, estacionalidad, variabilidad,...) su análisis basado en regresión es limitado. En tal caso, creo que es una pena usar datos agregados de INSTAR (perdiendo resolución) cuando precisamente el análisis como serie temporal nos mostraría la estacionalidad, la tendencia, etc. Por tanto, yo usaría los datos brutos de INSTAR. Ahora, hay un problema, y es que la función ts no se lleva bien con los años bisiestos, ya que la frecuencia tiene que ser un valor fijo para toda la serie (que no para dos series, por lo que no es un problema comparar COPLAS e INSTAR aunque tengan distinta frecuencia). En los foros proponen usar zoo para evitar este problema, que es lo que usamos en Ecoinformática, creo... Otra opción sería eliminar de los datos de INSTAR el 29 de febrero de los años bisiestos, aunque parece una solución poco elegante...
+
+En cuanto al error que te sale en el código, entiendo que es porque cuando la frecuencia es 1, decompose no funciona ya que no se puede observar estacionalidad si hay una sola medida por año. Por eso cambiando a freq=2 se elimina el error, pero no es correcto ya que nosotros sólo tenemos una medida/año. Por tanto, yo entiendo que no se puede aplicar la función decompose sobre COPLAS, sino que habrá que buscar otras herramientas para evaluar tendencias. En cualquier caso, y después de hablar con Antonio, yo entiendo que lo que habría que hacer es coger los datos de INSTAR, analizarlos (en bruto) como serie temporal, buscando estacionalidad, tendencias, ruido, etc. y quizás comparar esta serie con una serie climática (tmin, tmax y/o tmedia), de esta manera demostrando que los resultados del modelo guardan relación con las condiciones climáticas, como se espera del código. Si además encontramos la forma de analizar series temporales de frecuencia 1 entonces podríamos comparar COPLAS e INSTAR.
