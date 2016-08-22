@@ -3,17 +3,122 @@ title: "Diario_calibracion_validacion"
 output: html_document
 ---
 
+```{r}
+setwd("C:/DELL/GDrive_2/Instar/calibracion_validacion/fuentes_datos_validacion/COPLAS_PLAGAS/")
+```
+
 # Agregación de datos INSTAR: 
 
 Entiendo que agregais los datos de NetLogo para poder hacer la regresión COPLAS vs INSTAR, ¿es correcto? Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los días no parece adecuado, ¿así habrá individuos que se cuentan dos veces no? Entiendo que es difícil encontrar el parámetro adecuado, ya que no sabemos qué huevos hoy son los mismos que mañana y cuáles son nuevos... Antonio me comenta que ahí podría entrar un análisis de dinámica poblacional. Ya que la cosa se complica bastante, quizás para simplificar se podría probar con la media, el máximo y/o el mínimo, que quizás sean valores más reales que el acumulado que se ha usado hasta ahora.
 
 De hecho, "Resultados_agreg_Instar_SN.csv" tiene más individuos en L2 que en L1, lo cual no tiene sentido...
 
+## Datos INSTAR crudos:
+   
+```{r}
+# Datos crudos de INSTAR_SN:
+huevos <-read.table("huevos_sn.csv", header=T, sep=",", dec=",")
+L1 <-read.table("L1_sn.csv", header=T, sep=",", dec=",")
+L2 <-read.table("L2_sn.csv", header=T, sep=",", dec=",")
+crisalidas <-read.table("crisalidas_sn.csv", header=T, sep=",", dec=",")
+exergia <-read.table("vigor_sn.csv", header=T, sep=",", dec=".")
+
+# Juntamos todos en una misma tabla
+
+INSTAR_SN <- cbind(huevos, L1$L1, L2$L2, crisalidas$crisalida, exergia$exergia)
+names(INSTAR_SN)[1] <- "fecha"
+names(INSTAR_SN)[3] <- "l1"
+names(INSTAR_SN)[4] <- "l2"
+names(INSTAR_SN)[5] <- "crisalidas"
+names(INSTAR_SN)[6] <- "exergia"
+
+# Crear columna anio
+INSTAR_SN$fecha <-as.Date(INSTAR_SN$fecha, format="%d-%m-%y") 
+INSTAR_SN$anio<-as.numeric(format(INSTAR_SN$fecha, "%Y"))
+```
+
+**Importante**: recordar que mientras huevos, l1, l2 y crisalidas son valores absolutos (número total de individuos en el mundo Netlogo), exergia es la media del vigor de todos los hospedadores del mundo NetLogo.
+
+## Agregación por máximo
+```{r}
+max_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
+names(max_huevos)[2] <- "max_huevos"
+max_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
+names(max_l1)[2] <- "max_l1"
+max_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
+names(max_l2)[2] <- "max_l2"
+max_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
+names(max_crisalidas)[2] <- "max_crisalidas"
+max_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
+names(max_exergia)[2] <- "max_exergia"
+
+max_INSTAR <- cbind(max_huevos,max_l1, max_l2, max_crisalidas, max_exergia)
+max_INSTAR <- max_INSTAR[ -c(3,5,7,9) ]
+```
+
+## Agregación por mínimo
+```{r}
+min_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
+names(min_huevos)[2] <- "min_huevos"
+min_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
+names(min_l1)[2] <- "min_l1"
+min_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
+names(min_l2)[2] <- "min_l2"
+min_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
+names(min_crisalidas)[2] <- "min_crisalidas"
+min_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
+names(min_exergia)[2] <- "min_exergia"
+
+min_INSTAR <- cbind(min_huevos,min_l1, min_l2, min_crisalidas, min_exergia)
+min_INSTAR <- min_INSTAR[ -c(3,5,7,9) ]
+```
+
+## Agregación por media
+```{r}
+mean_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+names(mean_huevos)[2] <- "mean_huevos"
+mean_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+names(mean_l1)[2] <- "mean_l1"
+mean_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+names(mean_l2)[2] <- "mean_l2"
+mean_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+names(mean_crisalidas)[2] <- "mean_crisalidas"
+mean_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+names(mean_exergia)[2] <- "mean_exergia"
+
+mean_INSTAR <- cbind(mean_huevos, mean_l1, mean_l2, mean_crisalidas, mean_exergia)
+mean_INSTAR <- mean_INSTAR[ -c(3,5,7,9) ]
+```
+
+## Exportación e importación de datos de agregación por máximo, mínimo y media
+```{r}
+# write.csv(max_INSTAR, "max_INSTAR.csv", row.names=FALSE, na="")
+# write.csv(min_INSTAR, "min_INSTAR.csv", row.names=FALSE, na="")
+# write.csv(mean_INSTAR, "mean_INSTAR.csv", row.names=FALSE, na="")
+
+max_INSTAR<-read.table("max_INSTAR.csv", header=T, sep=",", dec=".")
+min_INSTAR<-read.table("min_INSTAR.csv", header=T, sep=",", dec=".")
+mean_INSTAR<-read.table("mean_INSTAR.csv", header=T, sep=",", dec=".")
+```
+
 # Regresión: 
 
-Por lo que veo habéis calculado una regresión lineal entre COPLAS e INSTAR, ¿por qué esperáis una relación lineal entre ambas variables? Lo ideal sería buscar la función que explica dicha relación, y ver qué tipo de función (lineal, logarítmica...) es, ¿no? En cualquier caso, quizás lo más esperable es una función logarítimica, como hace Cayuela (hace un glm, pero sobre datos en base logarítmica!). Intuitivamente, yo esperaría que para percibir cierta defoliación es necesario un número mínimo de individuos, por debajo del cual no se observa defoliación y a partir de cierta cantidad de individuos la defoliación es máxima, dando igual si ese valor se sobre pasa por mucho o por poco (si todos los árboles están defoliados da igual que haya X que X·10 individuos, por lo que ya no hay relación lineal), por lo que yo esperaría una relación exponencial.
+Por lo que veo habéis calculado una regresión lineal entre COPLAS e INSTAR, ¿por qué esperáis una relación lineal entre ambas variables? Lo ideal sería buscar la función que explica dicha relación, y ver qué tipo de función (lineal, logarítmica...) es, ¿no? En cualquier caso, quizás lo más esperable es una función logarítimica, como hace Cayuela (hace un glm, pero sobre datos en base logarítmica!). Intuitivamente, yo esperaría que para percibir cierta defoliación es necesario un número mínimo de individuos, por debajo del cual no se observa defoliación y a partir de cierta cantidad de individuos la defoliación es máxima, dando igual si ese valor se sobrepasa por mucho o por poco (si todos los árboles están defoliados da igual que haya X que X·10 individuos, por lo que ya no hay relación lineal), por lo que yo esperaría una relación exponencial.
 
 Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregación juega un papel importante ahí, quizás al usar otra agregación sale algo mejor (esperemos). Pregunta práctica: Ya que COPLAS es en realidad una media con su varianza, entiendo que debe haber alguna manera de incluir esto en la regresión (de decirle a R cuáles son los valores de COPLAS reales, para que haga la regresión considerando media y varianza). ¿Alguna idea?
+
+## Importación de datos de COPLAS y selección de datos a usar
+```{r}
+COPLAS<-read.csv("coplas_cortijuela.csv", header=TRUE, dec =".", sep=";")
+COPLAS_subset<-COPLAS[-c((1:6), 21), -c(2,3)]
+```
+
+## Transformación log de datos
+
+for loop?
+
+## Correlación y regresión
+
 
 # Regresión múltiple: 
 
