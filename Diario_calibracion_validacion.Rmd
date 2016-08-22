@@ -17,10 +17,10 @@ De hecho, "Resultados_agreg_Instar_SN.csv" tiene más individuos en L2 que en L1,
    
 ```{r}
 # Datos crudos de INSTAR_SN:
-huevos <-read.table("huevos_sn.csv", header=T, sep=",", dec=",")
-L1 <-read.table("L1_sn.csv", header=T, sep=",", dec=",")
-L2 <-read.table("L2_sn.csv", header=T, sep=",", dec=",")
-crisalidas <-read.table("crisalidas_sn.csv", header=T, sep=",", dec=",")
+huevos <-read.table("huevos_sn.csv", header=T, sep=",", dec=".")
+L1 <-read.table("L1_sn.csv", header=T, sep=",", dec=".")
+L2 <-read.table("L2_sn.csv", header=T, sep=",", dec=".")
+crisalidas <-read.table("crisalidas_sn.csv", header=T, sep=",", dec=".")
 exergia <-read.table("vigor_sn.csv", header=T, sep=",", dec=".")
 
 # Juntamos todos en una misma tabla
@@ -105,24 +105,51 @@ mean_INSTAR<-read.table("mean_INSTAR.csv", header=T, sep=",", dec=".")
 
 Por lo que veo habéis calculado una regresión lineal entre COPLAS e INSTAR, ¿por qué esperáis una relación lineal entre ambas variables? Lo ideal sería buscar la función que explica dicha relación, y ver qué tipo de función (lineal, logarítmica...) es, ¿no? En cualquier caso, quizás lo más esperable es una función logarítimica, como hace Cayuela (hace un glm, pero sobre datos en base logarítmica!). Intuitivamente, yo esperaría que para percibir cierta defoliación es necesario un número mínimo de individuos, por debajo del cual no se observa defoliación y a partir de cierta cantidad de individuos la defoliación es máxima, dando igual si ese valor se sobrepasa por mucho o por poco (si todos los árboles están defoliados da igual que haya X que X·10 individuos, por lo que ya no hay relación lineal), por lo que yo esperaría una relación exponencial.
 
-Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregación juega un papel importante ahí, quizás al usar otra agregación sale algo mejor (esperemos). Pregunta práctica: Ya que COPLAS es en realidad una media con su varianza, entiendo que debe haber alguna manera de incluir esto en la regresión (de decirle a R cuáles son los valores de COPLAS reales, para que haga la regresión considerando media y varianza). ¿Alguna idea?
+Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregación juega un papel importante ahí, quizás al usar otra agregación sale algo mejor (esperemos). 
+
+**Pregunta práctica**: Ya que COPLAS es en realidad una media con su varianza, entiendo que debe haber alguna manera de incluir esto en la regresión (de decirle a R cuáles son los valores de COPLAS reales, para que haga la regresión considerando media y varianza). ¿Alguna idea?
+
+## Transformación log de datos INSTAR
+
+**DUDA* qué base usamos para el log?
+
+```{r}
+
+# Transformación log de los máximos
+log_max_INSTAR<- data.frame("anio" = max_INSTAR$anio, log_max_huevos = (log(max_INSTAR$max_huevos)), log_max_l1 = (log(max_INSTAR$max_l1)), log_max_l2 = (log(max_INSTAR$max_l2)), log_max_crisalidas = (log(max_INSTAR$max_crisalidas)), log_max_exergia = (log(max_INSTAR$max_exergia)))
+
+# Transformación log de los mínimos
+log_min_INSTAR<- data.frame("anio" = min_INSTAR$anio, log_min_huevos = (log(min_INSTAR$min_huevos)), log_min_l1 = (log(min_INSTAR$min_l1)), log_min_l2 = (log(min_INSTAR$min_l2)), log_min_crisalidas = (log(min_INSTAR$min_crisalidas)), log_min_exergia = (log(min_INSTAR$min_exergia)))
+
+# Transformación log de las medias
+log_mean_INSTAR<- data.frame("anio" = mean_INSTAR$anio, log_mean_huevos = (log(mean_INSTAR$mean_huevos)), log_mean_l1 = (log(mean_INSTAR$mean_l1)), log_mean_l2 = (log(mean_INSTAR$mean_l2)), log_mean_crisalidas = (log(mean_INSTAR$mean_crisalidas)), log_mean_exergia = (log(mean_INSTAR$mean_exergia)))
+```
 
 ## Importación de datos de COPLAS y selección de datos a usar
 ```{r}
-COPLAS<-read.csv("coplas_cortijuela.csv", header=TRUE, dec =".", sep=";")
-COPLAS_subset<-COPLAS[-c((1:6), 21), -c(2,3)]
+COPLAS_SN<-read.csv("coplas_cortijuela.csv", header=TRUE, dec =".", sep=";")
+COPLAS_SN_subset<-COPLAS[-c((1:6), 21), -c(2,3)] # Necesario? ver apuntes, comando para definir valores sin su pareja
 ```
 
-## Transformación log de datos
+## Correlaciones y regresiones
 
-for loop?
+**DUDAS** lm o glm? cor y/o lm/glm?
 
-## Correlación y regresión
+cor(COPLAS_SN_subset$INFE_AVG_ROUND, log_max_INSTAR$log_max_l1)
+cor.test(COPLAS_SN_subset$INFE_AVG_ROUND, log_max_INSTAR$log_max_l1) 
 
+reg1<-lm(COPLAS_SN_subset$INFE_AVG_ROUND ~ log_max_INSTAR$log_max_l1)
+summary(reg1)
+plot(COPLAS_SN_subset$INFE_AVG_ROUND ~ log_max_INSTAR$log_max_l1)
 
 # Regresión múltiple: 
 
 No entiendo esto... Si l2 viene de l1, al hacer una regresión múltiple l1+l2 (o huevos+l1, o cualquier conbinación de variables de densidad de población), ¿no se está metiendo una redundancia? Sin embargo, sí me parece que podría ser interesante hacer una regresión múltiple considerando una variable de densidad de población y una relacionada con las condiciones climáticas (tmin, tmax y/o tmedia), ya que se podría esperar que, por ejemplo, huevos+tmin sea un buen predictor de COPLAS, ¿no?
+
+## Datos de temperatura:
+```{r}
+temp_sn<-read.csv("temp_sn.csv", header=TRUE, dec =".", sep=",")
+```
 
 # Series temporales: 
 
