@@ -193,7 +193,7 @@ INSTAR = a·COPLAS + b (INSTAR "described by" COPLAS)
 
 - Se cumplen las asunciones de una regresion? (normalidad,...) -> Usamos un glm, ya que lm asume que el error de los datos sigue una distribucion normal, mientras que el glm asume que otras distribuciones son posibles.
 - lm o glm? (ver anterior) Hago el lm tambien para ver los R2
-- cor y/o lm/glm?
+- cor y/o lm/glm? ejemplo de cor: cor(tabla_regresion$log_sum_l1, tabla_regresion$INFE_AVG)
 
 ```{r}
 # Construccion de tabla
@@ -265,7 +265,7 @@ summary(reg13_lm)
 summary(reg14_lm)
 summary(reg15_lm)
 
-# Exploracion grafica.
+# Exploracion grafica (ejemplo)
 plot(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)
 abline(lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG))
 ```
@@ -281,16 +281,108 @@ temp_sn<-read.csv("temp_sn.csv", header=TRUE, dec =".", sep=",")
 
 # Series temporales  
 
-No s? muy bien cu?l es el objetivo de el an?lisis de series temporales, por lo que quiz?s lo que digo no tiene sentido, corregidme plis :) 
+~~No se muy bien cual es el objetivo de el analisis de series temporales, por lo que quizas lo que digo no tiene sentido, corregidme plis :)~~
 
-*--> Cuantificar el grado de ajuste entre ambas series temporales (COPLAS e INSTAR)*
+~~Segun lo entiendo, queremos hacer un analisis de series temporales comparando COPLAS e INSTAR, ya que al ser variables que cambian en el tiempo debido a varios factores (condiciones de cada anio, estacionalidad, variabilidad,...) su analisis basado en regresion es limitado.~~
 
-Seg?n lo entiendo, queremos hacer un an?lisis de series temporales comparando COPLAS e INSTAR, ya que al ser variables que cambian en el tiempo debido a varios factores (condiciones de cada a?o, estacionalidad, variabilidad,...) su an?lisis basado en regresi?n es limitado. En tal caso, creo que es una pena usar datos agregados de INSTAR (perdiendo resoluci?n) cuando precisamente el an?lisis como serie temporal nos mostrar?a la estacionalidad, la tendencia, etc. Por tanto, yo usar?a los datos brutos de INSTAR. Ahora, hay un problema, y es que la funci?n ts no se lleva bien con los a?os bisiestos, ya que la frecuencia tiene que ser un valor fijo para toda la serie (que no para dos series, por lo que no es un problema comparar COPLAS e INSTAR aunque tengan distinta frecuencia). En los foros proponen usar zoo para evitar este problema, que es lo que usamos en Ecoinform?tica, creo... Otra opci?n ser?a eliminar de los datos de INSTAR el 29 de febrero de los a?os bisiestos, aunque parece una soluci?n poco elegante...
+~~En tal caso, creo que es una pena usar datos agregados de INSTAR (perdiendo resolucion) cuando precisamente el analisis como serie temporal nos mostraria la estacionalidad, la tendencia, etc. Por tanto, yo usaria los datos brutos de INSTAR. Ahora, hay un problema, y es que la funcion ts no se lleva bien con los anios bisiestos, ya que la frecuencia tiene que ser un valor fijo para toda la serie (que no para dos series, por lo que no es un problema comparar COPLAS e INSTAR aunque tengan distinta frecuencia). En los foros proponen usar zoo para evitar este problema, que es lo que usamos en Ecoinformqtica, creo... Otra opcion seria eliminar de los datos de INSTAR el 29 de febrero de los anios bisiestos (filas 980, 2441, 3902), aunque parece una solucion poco elegante...~~
 
-En cuanto al error que te sale en el c?digo, entiendo que es porque cuando la frecuencia es 1, decompose no funciona ya que no se puede observar estacionalidad si hay una sola medida por a?o. Por eso cambiando a freq=2 se elimina el error, pero no es correcto ya que nosotros s?lo tenemos una medida/a?o. Por tanto, yo entiendo que no se puede aplicar la funci?n decompose sobre COPLAS, sino que habr? que buscar otras herramientas para evaluar tendencias. En cualquier caso, y despu?s de hablar con Antonio, yo entiendo que lo que habr?a que hacer es coger los datos de INSTAR, analizarlos (en bruto) como serie temporal, buscando estacionalidad, tendencias, ruido, etc. y quiz?s comparar esta serie con una serie clim?tica (tmin, tmax y/o tmedia), de esta manera demostrando que los resultados del modelo guardan relaci?n con las condiciones clim?ticas, como se espera del c?digo. Si adem?s encontramos la forma de analizar series temporales de frecuencia 1 entonces podr?amos comparar COPLAS e INSTAR.
+~~En cuanto al error que te sale en el codigo, entiendo que es porque cuando la frecuencia es 1, decompose no funciona ya que no se puede observar estacionalidad si hay una sola medida por anio. Por eso cambiando a freq=2 se elimina el error, pero no es correcto ya que nosotros solo tenemos una medida/anio. Por tanto, yo entiendo que no se puede aplicar la funcion decompose sobre COPLAS, sino que habra que buscar otras herramientas para evaluar tendencias. En cualquier caso, y despues de hablar con Antonio, yo entiendo que lo que habria que hacer es coger los datos de INSTAR, analizarlos (en bruto) como serie temporal, buscando estacionalidad, tendencias, ruido, etc. y quizas comparar esta serie con una serie climatica (tmin, tmax y/o tmedia), de esta manera demostrando que los resultados del modelo guardan relacion con las condiciones climaticas, como se espera del codigo. Si ademas encontramos la forma de analizar series temporales de frecuencia 1 entonces podriamos comparar COPLAS e INSTAR.~~
+
+Queremos:
+
+- *Cuantificar el grado de ajuste entre los datos de INSTAR y COPLAS*
+
+Problemas metodologicos:
+- COPLAS e INSTAR no tienen la misma frecuencia
+- INSTAR contienen datos diarios, considerando años bisiestos
+- COPLAS tiene anios sin datos (1994 y 1997)
+
+Analisis a realizar:
+- Comparar COPLAS e INSTARagregado: esta opcion debe excluir el analisis de la estacionalidad de los datos, ya que al agregarse a un valor/anio no se podra observar la estacionalidad. Se podra, por tanto, analizar si la tendencia y el ruido son similares. Para esto asumimos que estas series tienen la forma:
+
+x(t) = m(t) + z(t)
+
+- Validacion interna del modelo: analisis de la serie temporal de INSTAR y su relacion con las variables climaticas (temperatura). De esta manera, se podran observar la variabilidad estacional de la serie, y compararla con los patrones meteorologicos. Esto requiere solucionar el problema de los anios bisiestos. Opciones: eliminar los datos de los 29 de febrero, agregacion mensual de los datos, usar otros paquetes que consideren series de datos de frecuencia irregular (zoo?), ...?
+
+## COPLAS vs INSTARagregado
 
 ```{r}
-# Pruebas (basado en el reto final de ecoinform?tica)
+COPLAS_SN_ts <-ts(COPLAS_SN[2], start=1993, end=2015, frequency=1)
+plot(COPLAS_SN_ts)
+decompose(COPLAS_SN_ts) # No se puede hacer porque tiene freq=1 (no puede medir estacionalidad) :(
+
+acf(COPLAS_SN_ts, na.action =na.pass) # By default, no missing values are allowed. If the na.action function passes through missing values (as na.pass does), the covariances are computed from the complete cases. This means that the estimate computed may well not be a valid autocorrelation sequence, and may contain missing values.
+```
+
+Asumimos una relacion exponencial entre COPLAS e INSTAR (no estoy muy segura de esto...):
+
+INSTAR = (a*e)^(b*COPLAS)
+
+Por tanto usamos los datos de INSTAR transformados y probamos con los dias equivalentes de l2: 
+
+```{r}
+x <- log_agreg_INSTAR_SN$log_sum_l2
+
+log_INSTAR_ts <-ts(x, start=2001, end=2014, frequency=1)
+plot(log_INSTAR_ts)
+acf(log_INSTAR_ts)
+```
+
+Comparamos COPLAS e INSTARagreg
+```{r}
+plot(ts.intersect(log_INSTAR_ts,COPLAS_SN_ts))
+plot(as.vector(log_INSTAR_ts), as.vector(COPLAS_SN_ts[9:22,]))
+lm_l2 <- lm(as.vector(log_INSTAR_ts)~ as.vector(COPLAS_SN_ts[9:22,]))
+
+summary(lm_l2)
+plot(lm_l2)
+
+# METER EL dev.off para dividir el espacio!
+```
+
+Creo que esto seria lo mismo, solo que con otra sintaxis
+```{r}
+intersect <- data.frame(ts.intersect(log_INSTAR_ts,COPLAS_SN_ts))
+lm_l2 <- lm(intersect$log_INSTAR_ts~intersect$COPLAS_SN_ts)
+```
+
+Bastante mala relación....
+
+
+plot(as.vector(log_INSTAR_ts), as.vector(COPLAS_SN_ts[9:22,]))
+cor(log_INSTAR_ts, COPLAS_SN_ts[9:22,])
+
+## Analisis de INSTARbruto (Con "ts", eliminando 29 de febrero)
+
+INSTAR:
+```{r}
+INSTAR_SN_sinbisestos <- INSTAR_SN[-c(980,2441,3902),]
+INSTAR_SN_ts <- ts(INSTAR_SN_sinbisestos[2:6], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts todo el conjunto de datos 
+INSTAR_SN_ts_huevos <- ts(INSTAR_SN_sinbisestos[2], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts cada variable por separado
+plot(INSTAR_SN_ts_huevos)
+plot(decompose(INSTAR_SN_ts_huevos, type = c("additive")))
+plot(decompose(INSTAR_SN_ts_huevos, type = c("multiplicative")))
+
+ts.intersect(INSTAR_SN_ts_huevos,COPLAS_SN_ts) # No se puede hacer si no tienen la misma frecuencia... :(
+```
+
+> "If the seasonal effect tends to increase as the trend increases, a multiplicative model may be more appropriate"- --> Quizás multiplicative es más correcto en nuestro caso? Ver página 20 en "Introductory Time Series with R":
+"In this example, the multiplicative model would seem more appropriate than the additive model because the variance of the original series and trend increase with time (Fig. 1.14). However, the random component, which corresponds to zt, also has an increasing variance, which indicates that a logtransformation (Equation (1.4)) may be more appropriate for this series (Fig. 1.14)."
+
+Análisis exploratorio:
+```{r}
+aggregate(INSTAR_SN_ts_huevos)
+plot(aggregate(INSTAR_SN_ts_huevos))
+acf(INSTAR_SN_ts_huevos)
+```
+**NOTAS**
+start = 176 porque el 25 de junio de un anio no bisiesto es el dia 176 del anio
+end = 161 porque el 10 de junio de un anio no bisiesto es el dia 161 del anio
+
+
+# Pruebas (basado en el reto final de ecoinformatica)
+```{r}
 ## Exploratory plot
 plot(INSTAR_SN$fecha, INSTAR_SN$huevos, type='o', 
       xlab='year', pch=19, col='#325B84',
@@ -302,13 +394,11 @@ library('Kendall')
 m <- MannKendall(INSTAR_SN$huevos)
 m
 
-# Creo que considera la serie como valores puntuales (no medidas diarias) por lo que no encuentra tendencia ya que sube y baja en cada a?o (tiene estacionalidad)
+# Considera la serie como valores puntuales (no medidas diarias) por lo que no encuentra tendencia ya que sube y baja en cada anio (tiene estacionalidad)
 
 ### Test a linear regression
 ml <- lm(INSTAR_SN$fecha~INSTAR_SN$huevos)
-summary(ml)
-
-# ERROR: no sabe hacer un lm sobre una fecha
+summary(ml) # ERROR: no sabe hacer un lm sobre una fecha
 
 huevos_zoo <- zoo(INSTAR_SN$fecha~INSTAR_SN$huevos)
 
