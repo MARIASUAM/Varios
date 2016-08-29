@@ -32,6 +32,10 @@ INSTAR_SN$fecha <-as.Date(INSTAR_SN$fecha, format="%d-%m-%y")
 INSTAR_SN$anio<-as.numeric(format(INSTAR_SN$fecha, "%Y"))
 ```
 
+```{r, echo=FALSE}
+plot(exergia)
+```
+
 **Importante**: recordar que mientras huevos, l1, l2 y crisalidas son valores absolutos (numero total de individuos en el mundo Netlogo), exergia es la media del vigor de todos los hospedadores del mundo NetLogo.
 
 En nuestros datos hay solapamiento de fases no consecutivas (cosa que, en principio, no debería ocurrir).
@@ -145,7 +149,7 @@ Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de Net
 
 ## Transformacion log de datos INSTAR
 
-~~**DUDA* Es e la base correcta?~~ Parece que si (e-mail Almu) :)
+~~**DUDA* Es e la base correcta?~~ Parece que si (e-mail Almu) :) si consideramos una función exponencial...
 
 ```{r}
 log_agreg_INSTAR_SN<- data.frame(
@@ -274,11 +278,6 @@ abline(lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG))
 
 No entiendo esto... Si l2 viene de l1, al hacer una regresion multiple l1+l2 (o huevos+l1, o cualquier combinacion de variables de densidad de poblacion), no se esta metiendo una redundancia? Sin embargo, si me parece que podria ser interesante hacer una regresion multiple considerando una variable de densidad de poblacion y una relacionada con las condiciones climaticas (tmin, tmax y/o tmedia), ya que se podria esperar que, por ejemplo, huevos+tmin sea un buen predictor de COPLAS, no?
 
-## Datos de temperatura:
-```{r}
-temp_sn<-read.csv("temp_sn.csv", header=TRUE, dec =".", sep=",")
-```
-
 # Series temporales  
 
 ~~No se muy bien cual es el objetivo de el analisis de series temporales, por lo que quizas lo que digo no tiene sentido, corregidme plis :)~~
@@ -302,6 +301,8 @@ Analisis a realizar:
 - Comparar COPLAS e INSTARagregado: esta opcion debe excluir el analisis de la estacionalidad de los datos, ya que al agregarse a un valor/anio no se podra observar la estacionalidad. Se podra, por tanto, analizar si la tendencia y el ruido son similares. Para esto asumimos que estas series tienen la forma:
 
 x(t) = m(t) + z(t)
+
+**DUDA** no seria este el mismo analisis que la regresion? este parece mas adecuado porque considera cada dato dentro de la serie, y puede afinar mas ya que se estudian tambien las correlaciones entre cada anio, pero en realidad en el mismo (lm o glm COPLAS vs INSTAR)  
 
 - Validacion interna del modelo: analisis de la serie temporal de INSTAR y su relacion con las variables climaticas (temperatura). De esta manera, se podran observar la variabilidad estacional de la serie, y compararla con los patrones meteorologicos. Esto requiere solucionar el problema de los anios bisiestos. Opciones: eliminar los datos de los 29 de febrero, agregacion mensual de los datos, usar otros paquetes que consideren series de datos de frecuencia irregular (zoo?), ...?
 
@@ -358,7 +359,7 @@ cor(log_INSTAR_ts, COPLAS_SN_ts[9:22,])
 INSTAR:
 ```{r}
 INSTAR_SN_sinbisestos <- INSTAR_SN[-c(980,2441,3902),]
-INSTAR_SN_ts <- ts(INSTAR_SN_sinbisestos[2:6], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts todo el conjunto de datos 
+# INSTAR_SN_ts <- ts(INSTAR_SN_sinbisestos[2:6], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts todo el conjunto de datos 
 INSTAR_SN_ts_huevos <- ts(INSTAR_SN_sinbisestos[2], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts cada variable por separado
 plot(INSTAR_SN_ts_huevos)
 plot(decompose(INSTAR_SN_ts_huevos, type = c("additive")))
@@ -375,11 +376,71 @@ Análisis exploratorio:
 aggregate(INSTAR_SN_ts_huevos)
 plot(aggregate(INSTAR_SN_ts_huevos))
 acf(INSTAR_SN_ts_huevos)
+
+
+plot(decompose(INSTAR_SN_ts_huevos, type ="mult"))
+# o lo mismo:
+# huevos.decom <- decompose(INSTAR_SN_ts_huevos, type ="mult") 
+# plot(huevos.decom)
+trend <- huevos.decom$trend
+seasonal <- huevos.decom$seasonal
+random <- huevos.decom$random
+
+ts.plot(cbind(trend,trend*seasonal, trend*random),col=c("black", "red", "blue"), main="cbind(trend,trend*seasonal, trend*random") 
+legend("topright",legend=c("trend","trend*seasonal", "trend*random"), text.col=c("black","red", "blue"), col=c("black","red", "blue"))
 ```
 **NOTAS**
 start = 176 porque el 25 de junio de un anio no bisiesto es el dia 176 del anio
 end = 161 porque el 10 de junio de un anio no bisiesto es el dia 161 del anio
 
+## Datos de temperatura 
+```{r}
+temp_sn<-read.csv("temp_sn.csv", header=TRUE, dec =".", sep=",")
+temp_sn_sinbisestos <- temp_sn[-c(980,2441,3902),]
+
+tmax_sn_ts <- ts(temp_sn_sinbisestos[2], start=c(2001,176), end=c(2014,161), freq=365)
+tmax_decom <- decompose(tmax_sn_ts)
+
+tmin_sn_ts <- ts(temp_sn_sinbisestos[3], start=c(2001,176), end=c(2014,161), freq=365)
+tmin_decom <- decompose(tmin_sn_ts)
+
+tmedia_sn_ts <- ts(temp_sn_sinbisestos[4], start=c(2001,176), end=c(2014,161), freq=365)
+tmedia_decom <- decompose(tmedia_sn_ts)
+
+plot(cbind(tmax_decom$trend, tmin_decom$trend,tmedia_decom$trend))
+plot(cbind(tmax_decom$seasonal, tmin_decom$seasonal,tmedia_decom$seasonal))
+plot(cbind(tmax_decom$random, tmin_decom$random,tmedia_decom$random))
+```
+
+## Temperatura vs INSTAR
+```{r}
+plot(cbind(INSTAR_SN_ts_huevos, tmax_sn_ts, tmin_sn_ts, tmedia_sn_ts), main="Huevos & temperatures")
+dev.off()
+
+```
+
+
+> plot(decompose(Elec.ts))
+> Elec.decom <- decompose(Elec.ts, type = "mult")
+> plot(Elec.decom)
+> Trend <- Elec.decom$trend
+> Seasonal <- Elec.decom$seasonal
+> ts.plot(cbind(Trend, Trend * Seasonal), lty = 1:2)
+
+
+# Pruebas de plots:
+
+ts.plot(INSTAR_SN_ts_huevos, tmax_sn_ts, tmin_sn_ts, tmedia_sn_ts, col=c("black", "red", "blue", "orange"))
+
+ts.plot(INSTAR_SN_ts_huevos, axes=FALSE, ylim=c(0,1500000), ylab="huevos")
+par(new=TRUE) # Allow a second plot on the same graph
+
+ts.plot(tmax_sn_ts, tmin_sn_ts, tmedia_sn_ts, pch=15, col=c("red", "blue", "orange"), ylab="temperature", ylim=c(0,30), axes=FALSE) # Plot the second plot
+
+legend("topright",legend=c("huevos","tmax", "tmin", "tmedia"), text.col=c("black","red", "blue", "orange"), col=c("black","red", "blue", "orange")) # Add Legend
+
+ts.plot(cbind(trend,trend*seasonal, trend*random),lty=1:2) # lty 
+gives different line types,
 
 # Pruebas (basado en el reto final de ecoinformatica)
 ```{r}
