@@ -32,7 +32,7 @@ INSTAR_SN$fecha <-as.Date(INSTAR_SN$fecha, format="%d-%m-%y")
 INSTAR_SN$anio<-as.numeric(format(INSTAR_SN$fecha, "%Y"))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 plot(exergia)
 ```
 
