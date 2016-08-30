@@ -32,10 +32,6 @@ INSTAR_SN$fecha <-as.Date(INSTAR_SN$fecha, format="%d-%m-%y")
 INSTAR_SN$anio<-as.numeric(format(INSTAR_SN$fecha, "%Y"))
 ```
 
-```{r, echo=TRUE}
-plot(exergia)
-```
-
 **Importante**: recordar que mientras huevos, l1, l2 y crisalidas son valores absolutos (numero total de individuos en el mundo Netlogo), exergia es la media del vigor de todos los hospedadores del mundo NetLogo.
 
 En nuestros datos hay solapamiento de fases no consecutivas (cosa que, en principio, no debería ocurrir).
@@ -43,8 +39,11 @@ En nuestros datos hay solapamiento de fases no consecutivas (cosa que, en princi
 # Agregacion de datos INSTAR: 
 
 En cualquier caso, *la agregación no se debería hacer por año natural, sino por ciclo biológico!*
+¿cuándo es la medicion de COPLAS? contar años asi --> POR HACER
 
-Entiendo que agregais los datos de NetLogo para poder hacer la regreson COPLAS vs INSTAR, es correcto? Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los dias no parece adecuado, asi habra individuos que se cuentan dos veces no? Entiendo que es dificil encontrar el parametro adecuado, ya que no sabemos que huevos hoy son los mismos que maniana y cuales son nuevos... Antonio me comenta que ahi podria entrar un analisis de dinamica poblacional. Ya que la cosa se complica bastante, quizas para simplificar se podria probar con la media, el maximo y/o el minimo, que quizas sean valores mas reales que el acumulado que se ha usado hasta ahora. De hecho, "Resultados_agreg_Instar_SN.csv" tiene mas individuos en L2 que en L1, lo cual no tiene sentido...No?
+Entiendo que agregais los datos de NetLogo para poder hacer la regreson COPLAS vs INSTAR, es correcto? ~~Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los dias no parece adecuado, asi habra individuos que se cuentan dos veces no? Entiendo que es dificil encontrar el parametro adecuado, ya que no sabemos que huevos hoy son los mismos que maniana y cuales son nuevos...~~
+
+Antonio me comenta que ahi podria entrar un analisis de dinamica poblacional. Ya que la cosa se complica bastante, quizas para simplificar se podria probar con la media, el maximo y/o el minimo, que quizas sean valores mas reales que el acumulado que se ha usado hasta ahora. ~~De hecho, "Resultados_agreg_Instar_SN.csv" tiene mas individuos en L2 que en L1, lo cual no tiene sentido...No?~~ (Ver razonamiento en "Agregacion por suma")
 
 ## Agregacion por suma
 La suma de los individuos de cada instar para un mismo anio es una forma de calcular los "dias equivalentes del instar". Asi, sumando todos los l1 de un anio no obtenemos numero total de l1 sino dias equivalentes de afeccion de l1. Por tanto, la suma tiene sentido para "huevos", "l1", "l2" y "crisalidas", no para "exergia":
@@ -136,42 +135,18 @@ agreg_INSTAR_SN <- agreg_INSTAR_SN[ -c(3,5,7,9,11,13,15,17,19,21,23,25,27,29) ]
 # write.csv(agreg_INSTAR_SN, "agreg_INSTAR_SN.csv", row.names=FALSE, na="")
 ```
 
-## Importacion de datos de agregacion
+*FIN FASE DE AGREGACION INSTAR*
+
+# Validacion externa
+
+Importacion de datos de agregacion INSTAR
 ```{r}
 agreg_INSTAR_SN<-read.table("agreg_INSTAR_SN.csv", header=T, sep=",", dec=".")
 ```
 
-# Regresion: 
+Importacion de COPLAS y exploracion preliminar
 
-Por lo que veo habeis calculado una regresion lineal entre COPLAS e INSTAR, por que esperais una relacion lineal entre ambas variables? Lo ideal seria buscar la funcion que explica dicha relacion, y ver que tipo de funcion (lineal, logaritmica...) es, no? En cualquier caso, quizas lo mas esperable es una funcion logaritmica, como hace Cayuela (hace un glm, pero sobre datos en base logaritmica!). Intuitivamente, yo esperaria que para percibir cierta defoliacion es necesario un numero minimo de individuos, por debajo del cual no se observa defoliacion y a partir de cierta cantidad de individuos la defoliacion es maxima, dando igual si ese valor se sobrepasa por mucho o por poco (si todos los arboles estan defoliados da igual que haya X que X*10 individuos, por lo que ya no hay relacion lineal), por lo que yo esperaria una relacion exponencial.
-
-Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregacion juega un papel importante ahi, quizas al usar otra agregacion sale algo mejor (esperemos).
-
-## Transformacion log de datos INSTAR
-
-~~**DUDA* Es e la base correcta?~~ Parece que si (e-mail Almu) :) si consideramos una función exponencial...
-
-```{r}
-log_agreg_INSTAR_SN<- data.frame(
-  "anio" = agreg_INSTAR_SN$anio, 
-  log_sum_huevos = (log(agreg_INSTAR_SN$sum_huevos)), 
-  log_max_huevos = (log(agreg_INSTAR_SN$max_huevos)), 
-  log_mean_huevos = (log(agreg_INSTAR_SN$mean_huevos)), 
-  log_sum_l1 = (log(agreg_INSTAR_SN$sum_l1)), 
-  log_max_l1 = (log(agreg_INSTAR_SN$max_l1)), 
-  log_mean_l1 = (log(agreg_INSTAR_SN$mean_l1)),
-  log_sum_l2 = (log(agreg_INSTAR_SN$sum_l2)), 
-  log_max_l2 = (log(agreg_INSTAR_SN$max_l2)), 
-  log_mean_l2 = (log(agreg_INSTAR_SN$mean_l2)),
-  log_sum_crisalidas = (log(agreg_INSTAR_SN$sum_crisalidas)), 
-  log_max_crisalidas = (log(agreg_INSTAR_SN$max_crisalidas)),  
-  log_mean_crisalidas = (log(agreg_INSTAR_SN$mean_crisalidas)),
-  log_max_exergia = (log(agreg_INSTAR_SN$max_exergia)), 
-  log_mean_exergia = (log(agreg_INSTAR_SN$mean_exergia)), 
-  log_min_exergia = (log(agreg_INSTAR_SN$min_exergia)))
-```
-
-## Importacion de datos de COPLAS y exploracion preliminar
+**NOTA** la agregación de COPLAS se hizo en otro script y tiene que ser modificada
 ```{r}
 COPLAS_SN_completo<-read.csv("cortijuela.csv", header=TRUE, dec =".", sep=",") # Sin agregar, datos brutos
 
@@ -181,95 +156,165 @@ plot(COPLAS_SN_completo$GRADO.REVISADO ~ COPLAS_SN_completo$fecha)
 COPLAS_SN<-read.csv("coplas_cortijuela_prueba.csv", header=TRUE, dec =".", sep=",") # Medias para cada rodal (agregado)
 ```
 
-**DUDAS**
 - Es correcto hacer la media (al menos tal y como esta hecha) en una variable discreta como es COPLAS? 
-    -> Entiendo que si, pero habra que usar la media obtenida, no el redondeo
+    -> Entiendo que si, pero habra que usar la media obtenida, no el redondeo 
     -> Además lo adecuado sería ponderar según la superficie de cada rodal en el total (si tienen tamanios muy diferentes, al hacer la media se esta dando mas peso de la cuenta al pequenio y se esta subestimando el grande)
-    
+
 - En caso de que sea correcto, se debe/hay forma de considerar la varianza en la regresion?
 - Debe considerarse COPLAS de alguna manera especial en la regresion por ser una variable discreta?
 
-## Correlaciones y regresiones
+Por lo que veo habeis calculado una regresion lineal entre COPLAS e INSTAR, por que esperais una relacion lineal entre ambas variables? Lo ideal seria buscar la funcion que explica dicha relacion, y ver que tipo de funcion (lineal, logaritmica...) es, no? En cualquier caso, quizas lo mas esperable es una funcion logaritmica, como hace Cayuela (hace un glm, pero sobre datos en base logaritmica!). Intuitivamente, yo esperaria que para percibir cierta defoliacion es necesario un numero minimo de individuos, por debajo del cual no se observa defoliacion y a partir de cierta cantidad de individuos la defoliacion es maxima, dando igual si ese valor se sobrepasa por mucho o por poco (si todos los arboles estan defoliados da igual que haya X que X*10 individuos, por lo que ya no hay relacion lineal), por lo que yo esperaria una relacion exponencial.
 
+Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregacion juega un papel importante ahi, quizas al usar otra agregacion sale algo mejor (esperemos).
+
+**Puesta en comun (29/08/2016)**
+
+Asumimos que INSTAR(exergia) y COPLAS son la misma variable/miden lo mismo. Así, el modelo puede ser validado haciendo una regresión lineal (ver "Apuntes de validación de modelos"), donde COPLAS es la variable independiente (X) e INSTAR(exergia) es la variable independiente (Y). Con esto estamos asumiendo:
+
+- Que, como se ha dicho antes, COPLAS e INSTAR miden lo mismo de la misma forma (en una relación inversa)
+- Que se cumplen las asunciones de los modelos parametricos lineales (sobre Y y sobre los errores del modelo lineal), a saber:
+  Normalidad: o, al menos, simetria
+```{r}
+hist(exergia$exergia) # todos los datos de energia
+hist(mean_INSTAR$mean_exergia) # datos medios para cada anio
+```
+  No parecen normales... Ni siquiera simetricos :(
+  El problema puede ser que el tamanio de la muestra es muy pequenio (n=14 en el agregado), aunque entonces el bruto no tendria por que tener el mismo problema.
+  Posible solución: transformacion a una escala diferente (log o potencial)
+  
+  Homogeneidad de las varianzas: 
+```{r}
+var_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=var, na.rm=TRUE)
+plot(var_exergia)
+```
+Habria que hacer un test para comprobar si son distintas significativamente, pero a simple vista no lo parece...
+
+  Linealidad
+```{r}
+ds <- data.frame(cbind(mean_exergia,COPLAS_SN$INFE_AVG[(9:22)]))
+names(ds)[3] <- "INFE_AVG"
+plot(ds$mean_exergia ~ ds$INFE_AVG)
+```
+  ...
+  
+  Independencia: "the most common situation where this assumption is not met is when data are recorded in a time sequence"... Parece que tendremos que usar time series analysis si queremos algo decente...? Al menos con la agregacion tal y como se ha hecho hasta ahora.
+
+De todas formas, aqui va la regresion:
+```{r}
+reg_exergia_COPLAS <- lm(ds$mean_exergia ~ ds$INFE_AVG)
+abline(reg_exergia_COPLAS)
+summary(reg_exergia_COPLAS)
+plot(reg_exergia_COPLAS)
+dev.off()
+```
+
+Ademas de la regresion COPLAS ~ INSTAR(exergia), se decide realizar tambien regresiones entre variables INSTAR relacionadas con el numero de larvas y los valores de COPLAS. En este caso, asumimos:
+- Que el numero de dias equivalentes de larvas (en l1 y en l2) guarda una relacion respecto a COPLAS, siendo INSTAR(lx) la variable independiente, y COPLAS la dependiente (asumimos que defoliacion es consecuencia de densidad de poblacion). De manera que:
+    a) la defoliacion aumenta muy rapidamente al principio segun aumenta el numero de dias equivalentes hasta llegar a cierta saturacion --> eso seria logaritmica
+    b) la defoliacion aumenta lentamente al principio segun aumenta el numero de dias equivalentes --> eso seria exponencial
+    c) a mayor numero de dias equivalentes mayor la defoliacion, considerando cierta fase estacionaria al principio y cierta saturacion en los valores mas altos --> eso no seria ninguna de las dos, en realidad. **Hay alguna funcion que nos lo explique adecuadamente?**
+    
+    Entiendo que asumimos b (funcion exponencial con INSTAR(lx) como variable independiente, y COPLAS como dependiente). Entonces:
+    Asumimos: COPLAS = a*e^(b*INSTAR)
+    Transformamos: Z = Ln(COPLAS)
+    Modelo linealizado: Z = ln(a) + (b*INSTAR)
+    
+    Para estudir si el modelo logaritmo o exponencial explican/se adecuan a nuestros datos, lo mas facil es transformarlos a la funcion correspondiente, para asi realizar una regresion lineal entre los valores transformados y COPLAS. Entiendo que esto lo hacemos porque es mas facil de evaluar  un modelo lineal (con R2) que uno logaritmico o exponencial.
+    
+## Construccion de tabla de datos
+```{r}
+log_COPLAS <- data.frame(log(ds[3]))
+ds2 <- cbind(sum_l1, sum_l2, log_COPLAS)
+ds2 <- ds2[ -c(3) ]
+names(ds2)[4] <- "log_COPLAS"
+```
+
+## Regresion
+
+NO SE HAN COMPROBADO LAS ASUNCIONES
+
+```{r}
+reg_l1_COPLAS <- lm(ds2$log_COPLAS~ds2$sum_l1)
+```
+
+  El problema es que la transformacion da valores "-Inf"... 
+  Posible solucion: "Use log(Z+c) where c is an appropiate constant if there are zeros in the data set because you can't take the log of zero. Some people use the smallest possible value for their variable as a constant, others use an arbitrarily small number, such as 0.001". Careful with ANOVA significancies if this solution is applied!
+
+```{r}
+ds2$log_COPLAS[ds2$log_COPLAS == "-Inf"] <- "-0.001"
+reg_l1_COPLAS <- lm(ds2$log_COPLAS~ds2$sum_l1)
+summary(reg_l1_COPLAS)
+plot(reg_l1_COPLAS)
+dev.off()
+```
+
+
+~~## Transformacion log de datos INSTAR~~
+~~log_agreg_INSTAR_SN<- data.frame(
+  "anio" = agreg_INSTAR_SN$anio,
+  log_sum_huevos = (log(agreg_INSTAR_SN$sum_huevos)),
+  log_max_huevos = (log(agreg_INSTAR_SN$max_huevos)),
+  log_mean_huevos = (log(agreg_INSTAR_SN$mean_huevos)),
+  log_sum_l1 = (log(agreg_INSTAR_SN$sum_l1)),
+  log_max_l1 = (log(agreg_INSTAR_SN$max_l1)),
+  log_mean_l1 = (log(agreg_INSTAR_SN$mean_l1)),
+  log_sum_l2 = (log(agreg_INSTAR_SN$sum_l2)),
+  log_max_l2 = (log(agreg_INSTAR_SN$max_l2)),
+  log_mean_l2 = (log(agreg_INSTAR_SN$mean_l2)),
+  log_sum_crisalidas = (log(agreg_INSTAR_SN$sum_crisalidas)),
+  log_max_crisalidas = (log(agreg_INSTAR_SN$max_crisalidas)),
+  log_mean_crisalidas = (log(agreg_INSTAR_SN$mean_crisalidas)),
+  log_max_exergia = (log(agreg_INSTAR_SN$max_exergia)),
+  log_mean_exergia = (log(agreg_INSTAR_SN$mean_exergia)),
+  log_min_exergia = (log(agreg_INSTAR_SN$min_exergia)))~~
+
+~~## Correlaciones y regresiones
 **La variable independiente (x) son los datos de COPLAS, y la variable dependiente (y) son los datos de Instar:**
-
-INSTAR = a·COPLAS + b (INSTAR "described by" COPLAS)
+INSTAR = a·COPLAS + b (INSTAR "described by" COPLAS)~~
 
 - Se cumplen las asunciones de una regresion? (normalidad,...) -> Usamos un glm, ya que lm asume que el error de los datos sigue una distribucion normal, mientras que el glm asume que otras distribuciones son posibles.
 - lm o glm? (ver anterior) Hago el lm tambien para ver los R2
 - cor y/o lm/glm? ejemplo de cor: cor(tabla_regresion$log_sum_l1, tabla_regresion$INFE_AVG)
 
-```{r}
-# Construccion de tabla
-tabla_regresion <- cbind(log_agreg_INSTAR_SN, COPLAS_SN[-c((1:8), 23), -c(1,4)])
+~~# Construccion de tabla~~
+~~tabla_regresion <- cbind(log_agreg_INSTAR_SN, COPLAS_SN[-c((1:8), 23), -c(1,4)])~~
 
-# Regresiones glm y resultados
-reg1_glm  <- glm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)
-reg2_glm  <- glm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)
-reg3_glm  <- glm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)
-reg4_glm  <- glm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)
-reg5_glm  <- glm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)
-reg6_glm  <- glm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)
-reg7_glm  <- glm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)
-reg8_glm  <- glm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)
-reg9_glm  <- glm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)
-reg10_glm <- glm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)
-reg11_glm <- glm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)
-reg12_glm <- glm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)
-reg13_glm <- glm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)
-reg14_glm <- glm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)
-reg15_glm <- glm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)
+~~# Regresiones glm y resultados~~
+~~reg1_glm  <- glm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg2_glm  <- glm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg3_glm  <- glm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg4_glm  <- glm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg5_glm  <- glm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg6_glm  <- glm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg7_glm  <- glm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg8_glm  <- glm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg9_glm  <- glm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg10_glm <- glm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg11_glm <- glm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg12_glm <- glm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg13_glm <- glm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)~~
+~~reg14_glm <- glm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)~~
+~~reg15_glm <- glm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)~~
 
-summary(reg1_glm)
-summary(reg2_glm)
-summary(reg3_glm)
-summary(reg4_glm)
-summary(reg5_glm)
-summary(reg6_glm)
-summary(reg7_glm)
-summary(reg8_glm)
-summary(reg9_glm)
-summary(reg10_glm)
-summary(reg11_glm)
-summary(reg12_glm)
-summary(reg13_glm)
-summary(reg14_glm)
-summary(reg15_glm)
-
-# Regresiones glm y resultados
-reg1_lm  <- lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)
-reg2_lm  <- lm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)
-reg3_lm  <- lm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)
-reg4_lm  <- lm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)
-reg5_lm  <- lm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)
-reg6_lm  <- lm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)
-reg7_lm  <- lm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)
-reg8_lm  <- lm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)
-reg9_lm  <- lm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)
-reg10_lm <- lm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)
-reg11_lm <- lm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)
-reg12_lm <- lm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)
-reg13_lm <- lm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)
-reg14_lm <- lm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)
-reg15_lm <- lm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)
-
-summary(reg1_lm)
-summary(reg2_lm)
-summary(reg3_lm)
-summary(reg4_lm)
-summary(reg5_lm)
-summary(reg6_lm)
-summary(reg7_lm)
-summary(reg8_lm)
-summary(reg9_lm)
-summary(reg10_lm)
-summary(reg11_lm)
-summary(reg12_lm)
-summary(reg13_lm)
-summary(reg14_lm)
-summary(reg15_lm)
+~~# Regresiones glm y resultados~~
+~~reg1_lm  <- lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg2_lm  <- lm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg3_lm  <- lm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)~~
+~~reg4_lm  <- lm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg5_lm  <- lm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg6_lm  <- lm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)~~
+~~reg7_lm  <- lm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg8_lm  <- lm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg9_lm  <- lm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)~~
+~~reg10_lm <- lm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg11_lm <- lm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg12_lm <- lm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)~~
+~~reg13_lm <- lm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)~~
+~~reg14_lm <- lm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)~~
+~~reg15_lm <- lm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)~~
 
 # Exploracion grafica (ejemplo)
+```{r}
 plot(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)
 abline(lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG))
 ```
