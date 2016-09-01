@@ -6,9 +6,12 @@ output: html_document
 ```{r}
 # Definir directorio: si se abre desde "Project" es necesario abrirlo desde el menú (Session>Set working directory>...)
 setwd("C:/DELL/GDrive_2/Instar/calibracion_validacion/fuentes_datos_validacion/COPLAS_PLAGAS/")
+library(lubridate)
 ```
 
 # Zona 2
+
+# Agregacion de datos INSTAR: 
 
 ## Datos INSTAR crudos:
    
@@ -28,222 +31,273 @@ INSTAR_bz2$fecha <-as.Date(INSTAR_bz2$fecha, format="%d-%m-%Y") # %Y si el anio 
 
 **Importante**: recordar que mientras l1 y l2 son valores absolutos (numero total de individuos en el mundo Netlogo), exergia es la media del vigor de todos los hospedadores del mundo NetLogo.
 
-En este caso, al contrario que en Sierra Nevada, parece que todos los anios cada instar asciende y desciende hasta 0, como es esperable
-
-# Agregacion de datos INSTAR: 
+En este caso, al contrario que en Sierra Nevada, parece que todos los anios cada instar asciende y desciende hasta 0, como es esperable.
 
 ## Definicion de los ciclos biologicos
 
-En cualquier caso, *la agregación no se debería hacer por año natural, sino por ciclo biológico!* ¿cuándo es la medicion de COPLAS? 
+En cualquier caso, *la agregación no se debería hacer por año natural, sino por ciclo biológico!* 
 
-"Since 1973, forestry technicians have evaluated the degree of infestation by PPM in all pine stands *at the end of the winter season (February–April)* [...]" --> COnsideremos 20 de marzo. 
+"Since 1973, forestry technicians have evaluated the degree of infestation by PPM in all pine stands *at the end of the winter season (February–April)* [...]" --> Considaremos 20 de marzo (dia 79 del anio).
 
-If else para el primer año y el ultimo
-
-INSTAR_BZ2$ciclo<-as.numeric(...)
-
+Solucion poco elegante... >.<
 ```{r}
-library(lubridate)
-
 INSTAR_bz2$yday <- yday(INSTAR_bz2$fecha) # anadimos el dia del anio con el paquete lubridate
-INSTAR_bz2$year <- year(INSTAR_bz2$fecha)
+INSTAR_bz2$year <- year(INSTAR_bz2$fecha) # anadimos el anio con el paquete lubridate
 
+INSTAR_bz2$biociclo <- NULL
 
-for(i in vector){commands}
+subset_1993 <- subset(INSTAR_bz2, INSTAR_bz2$year==1993)
+for(i in 1:length(subset_1993$yday)){
+  ifelse(subset_1993$yday[i]<=79, 
+       subset_1993$biociclo[i] <- 1, subset_1993$biociclo[i] <- 2)
+}
 
-INSTAR_bz2$biociclo <- rep("sinvalor")
-ifelse((INSTAR_bz2$yday[2]>=50 && INSTAR_bz2$year[2]==1993), 
-       INSTAR_bz2$biociclo[2] == 1, INSTAR_bz2$biociclo[2]==2)
+subset_1994 <- subset(INSTAR_bz2, INSTAR_bz2$year==1994)
+for(i in 1:length(subset_1994$yday)){
+  ifelse(subset_1994$yday[i]<=79, 
+       subset_1994$biociclo[i] <- 2, subset_1994$biociclo[i] <- 3)
+}
 
+subset_1995 <- subset(INSTAR_bz2, INSTAR_bz2$year==1995)
+for(i in 1:length(subset_1995$yday)){
+  ifelse(subset_1995$yday[i]<=79, 
+       subset_1995$biociclo[i] <- 3, subset_1995$biociclo[i] <- 4)
+}
+
+subset_1996 <- subset(INSTAR_bz2, INSTAR_bz2$year==1996)
+for(i in 1:length(subset_1996$yday)){
+  ifelse(subset_1996$yday[i]<=79, 
+       subset_1996$biociclo[i] <- 4, subset_1996$biociclo[i] <- 5)
+}
+
+subset_1997 <- subset(INSTAR_bz2, INSTAR_bz2$year==1997)
+for(i in 1:length(subset_1997$yday)){
+  ifelse(subset_1997$yday[i]<=79, 
+       subset_1997$biociclo[i] <- 5, subset_1997$biociclo[i] <- 6)
+}
+
+subset_1998 <- subset(INSTAR_bz2, INSTAR_bz2$year==1998)
+for(i in 1:length(subset_1998$yday)){
+  ifelse(subset_1998$yday[i]<=79, 
+       subset_1998$biociclo[i] <- 6, subset_1998$biociclo[i] <- 7)
+}
+
+subset_1999 <- subset(INSTAR_bz2, INSTAR_bz2$year==1999)
+for(i in 1:length(subset_1999$yday)){
+  ifelse(subset_1999$yday[i]<=79, 
+       subset_1999$biociclo[i] <- 7, subset_1999$biociclo[i] <- 8)
+}
+
+subset_2000 <- subset(INSTAR_bz2, INSTAR_bz2$year==2000)
+for(i in 1:length(subset_2000$yday)){
+  ifelse(subset_2000$yday[i]<=79, 
+       subset_2000$biociclo[i] <- 8, subset_2000$biociclo[i] <- 9)
+}
+
+subset_2001 <- subset(INSTAR_bz2, INSTAR_bz2$year==2001)
+for(i in 1:length(subset_2001$yday)){
+  ifelse(subset_2001$yday[i]<=79, 
+       subset_2001$biociclo[i] <- 9, subset_2001$biociclo[i] <- 10)
+}
+
+subset_2002 <- subset(INSTAR_bz2, INSTAR_bz2$year==2002)
+for(i in 1:length(subset_2002$yday)){
+  ifelse(subset_2002$yday[i]<=79, 
+       subset_2002$biociclo[i] <- 10, subset_2002$biociclo[i] <- 11)
+}
+
+subset_2003 <- subset(INSTAR_bz2, INSTAR_bz2$year==2003)
+for(i in 1:length(subset_2003$yday)){
+  ifelse(subset_2003$yday[i]<=79, 
+       subset_2003$biociclo[i] <- 11, subset_2003$biociclo[i] <- 12)
+}
+
+subset_2004 <- subset(INSTAR_bz2, INSTAR_bz2$year==2004)
+for(i in 1:length(subset_2004$yday)){
+  ifelse(subset_2004$yday[i]<=79, 
+       subset_2004$biociclo[i] <- 12, subset_2004$biociclo[i] <- 13)
+}
+subset_2005 <- subset(INSTAR_bz2, INSTAR_bz2$year==2005)
+for(i in 1:length(subset_2005$yday)){
+  ifelse(subset_2005$yday[i]<=79, 
+       subset_2005$biociclo[i] <- 13, subset_2005$biociclo[i] <- 14)
+}
+
+subset_2006 <- subset(INSTAR_bz2, INSTAR_bz2$year==2006)
+for(i in 1:length(subset_2006$yday)){
+  ifelse(subset_2006$yday[i]<=79, 
+       subset_2006$biociclo[i] <- 14, subset_2006$biociclo[i] <- 15)
+}
+
+subset_2007 <- subset(INSTAR_bz2, INSTAR_bz2$year==2007)
+for(i in 1:length(subset_2007$yday)){
+  ifelse(subset_2007$yday[i]<=79, 
+       subset_2007$biociclo[i] <- 15, subset_2007$biociclo[i] <- 16)
+}
+
+subset_2008 <- subset(INSTAR_bz2, INSTAR_bz2$year==2008)
+for(i in 1:length(subset_2008$yday)){
+  ifelse(subset_2008$yday[i]<=79, 
+       subset_2008$biociclo[i] <- 16, subset_2008$biociclo[i] <- 17)
+}
+
+subset_2009 <- subset(INSTAR_bz2, INSTAR_bz2$year==2009)
+for(i in 1:length(subset_2009$yday)){
+  ifelse(subset_2009$yday[i]<=79, 
+       subset_2009$biociclo[i] <- 17, subset_2009$biociclo[i] <- 18)
+}
+
+subset_2010 <- subset(INSTAR_bz2, INSTAR_bz2$year==2010)
+for(i in 1:length(subset_2010$yday)){
+  ifelse(subset_2010$yday[i]<=79, 
+       subset_2010$biociclo[i] <- 18, subset_2010$biociclo[i] <- 19)
+}
+
+subset_2011 <- subset(INSTAR_bz2, INSTAR_bz2$year==2011)
+for(i in 1:length(subset_2011$yday)){
+  ifelse(subset_2011$yday[i]<=79, 
+       subset_2011$biociclo[i] <- 19, subset_2011$biociclo[i] <- 20)
+}
+
+subset_2012 <- subset(INSTAR_bz2, INSTAR_bz2$year==2012)
+for(i in 1:length(subset_2012$yday)){
+  ifelse(subset_2012$yday[i]<=79, 
+       subset_2012$biociclo[i] <- 20, subset_2012$biociclo[i] <- 21)
+}
+
+subset_2013 <- subset(INSTAR_bz2, INSTAR_bz2$year==2013)
+for(i in 1:length(subset_2013$yday)){
+  ifelse(subset_2013$yday[i]<=79, 
+       subset_2013$biociclo[i] <- 21, subset_2013$biociclo[i] <- 22)
+}
+
+subset_2014 <- subset(INSTAR_bz2, INSTAR_bz2$year==2014)
+for(i in 1:length(subset_2014$yday)){
+  ifelse(subset_2014$yday[i]<=79, 
+       subset_2014$biociclo[i] <- 22, subset_2014$biociclo[i] <- 23)
+}
+
+INSTAR_bz2 <- rbind(subset_1993, subset_1994, subset_1995, subset_1996, subset_1997, subset_1998, subset_1999, subset_2000, subset_2001, subset_2002, subset_2003, subset_2004, subset_2005, subset_2006, subset_2007, subset_2008, subset_2009, subset_2010, subset_2011, subset_2012, subset_2013, subset_2014)
 ```
 
-INSTAR_bz2$biociclo
+```{r}
+# Ideas varias:
 
-biociclo <- 1
+# x <- 1993:2014
+# y <- 1:22
+# z <- 2:23
+# 
+# 
+# for(i in 1:length(prueba$x)){
+#   name <- paste("subset", x[i], sep = "_") # no hace nada
+#   name <- data.frame(subset(INSTAR_bz2, INSTAR_bz2$year==x[i]))
+#   for(j in 1:length(name$yday)){
+#     ifelse(name$yday[j]<=50, 
+#        name$biociclo[j] <- y[i], name$biociclo[j] <- z[i])
+#   }
+# }
 
-for (i in unique(INSTAR_bz2$year)){
-  for(j in INSTAR_bz2$yday){
-    ifelse(INSTAR_bz2$yday[j] <= 50,
-    INSTAR_bz2$biociclo[j] == biociclo,
-    INSTAR_bz2$biociclo[j] == biociclo+1)
-    }
-  biociclo == biociclo + 1
-  }
-  
-
-
-for (i in unique(INSTAR_bz2$year)){
-  if(INSTAR_bz2$year == min(INSTAR_bz2$year))
-     {INSTAR_bz2$by <- ifelse(INSTAR_bz2$ciclo == 0, 
-                  by, by + 1) 
-       by <- by + 1}
-  next
-  }
-  
-  
-ifelse(test, yes, no)
-for(i in vector){commands}
-
-
-df$ciclo <- ifelse(df$day >= 50, 1, 0)
-
-start_year = min(df$year)
-# 2000 
-by <- 0
-
-for (i in 1:nrow(df)){ 
-  
-   # mycaso <- df[i,]
-  
-  df$by <- ifelse(df$year == start_year && df$ciclo == 0,
-                      by, 
-                      by + 1)
-  
-                      
-  start_year <- start_year + 1 
-  
-  by <- by + 1
- }
+# Otra
+# generar_biociclos <- function(subset_year, start_year = 1993, biociclo = 1){
+#   subset_year <- subset(INSTAR_bz2, INSTAR_bz2$year==start_year)
+#   for(i in 1:length(subset_year$yday)){
+#   ifelse(subset_year$yday[i]<=50, 
+#        subset_year$biociclo[i] <- biociclo, subset_year$biociclo[i] <- biociclo + 1)
+#   biociclo <- biociclo + 1
+#   start_year <- start_year +1
+#   }
+#   return(subset_year$biociclo[i]) 
+# } 
+# 
+# generar_biociclos(subset_year, start_year = 1993, biociclo = 1
 
 
-for (i in unique(df$year)){ 
-  if(df$year == min(df$year))
-     {df$by <- ifelse(df$ciclo == 0, 
-                  by, by + 1) 
-       by <- by + 1}
-  next
-  }
-
-
-
-                     
-
-
-Entiendo que agregais los datos de NetLogo para poder hacer la regreson COPLAS vs INSTAR, es correcto? ~~Sin embargo, sumar los datos de huevos, l1, l2 y crisalidas de todos los dias no parece adecuado, asi habra individuos que se cuentan dos veces no? Entiendo que es dificil encontrar el parametro adecuado, ya que no sabemos que huevos hoy son los mismos que maniana y cuales son nuevos...~~
-
-Antonio me comenta que ahi podria entrar un analisis de dinamica poblacional. Ya que la cosa se complica bastante, quizas para simplificar se podria probar con la media, el maximo y/o el minimo, que quizas sean valores mas reales que el acumulado que se ha usado hasta ahora. ~~De hecho, "Resultados_agreg_Instar_SN.csv" tiene mas individuos en L2 que en L1, lo cual no tiene sentido...No?~~ (Ver razonamiento en "Agregacion por suma")
+# Otra:
+# for (i in unique(INSTAR_bz2$year)){
+#   for(j in INSTAR_bz2$yday){
+#     ifelse(INSTAR_bz2$yday[j] <= 50,
+#     INSTAR_bz2$biociclo[j] == biociclo,
+#     INSTAR_bz2$biociclo[j] == biociclo+1)
+#     }
+#   biociclo == biociclo + 1
+#   }
+```
 
 ## Agregacion por suma
-La suma de los individuos de cada instar para un mismo anio es una forma de calcular los "dias equivalentes del instar". Asi, sumando todos los l1 de un anio no obtenemos numero total de l1 sino dias equivalentes de afeccion de l1. Por tanto, la suma tiene sentido para "huevos", "l1", "l2" y "crisalidas", no para "exergia":
+La suma de los individuos de cada instar para un mismo anio es una forma de calcular los "dias equivalentes del instar". Asi, sumando todos los l1 de un anio no obtenemos numero total de l1 sino dias equivalentes de afeccion de l1. Por tanto, la suma tiene sentido para "huevos", "l1", "l2" y "crisalidas", no para "exergia". 
+
+Hacemos la agregacion solo para l1 y l2
 
 ```{r}
-sum_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=sum, na.rm=TRUE)
-names(sum_huevos)[2] <- "sum_huevos"
-sum_l1<- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=sum, na.rm=TRUE)
+sum_l1<- aggregate(x = INSTAR_bz2$l1, by=list(biociclo=INSTAR_bz2$biociclo), FUN=sum, na.rm=TRUE)
 names(sum_l1)[2] <- "sum_l1"
-sum_l2<- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=sum, na.rm=TRUE)
+sum_l2<- aggregate(x = INSTAR_bz2$l2, by=list(biociclo=INSTAR_bz2$biociclo), FUN=sum, na.rm=TRUE)
 names(sum_l2)[2] <- "sum_l2"
-sum_crisalidas<- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=sum, na.rm=TRUE)
-names(sum_crisalidas)[2] <- "sum_crisalidas"
-
-sum_INSTAR<- cbind(sum_huevos,sum_l1, sum_l2, sum_crisalidas)
-sum_INSTAR <- sum_INSTAR[ -c(3,5,7) ]
 ```
 
 ## Agregacion por maximo
-Dos anios con el mismo numero de individuos pueden tener maximos muy diferentes, segun la puesta, eclosion, etc coincida mas o menos en el tiempo (mismo efecto que la media). El valor maximo, por tanto, debe ser usado con precaución, aunque si puede ser una manera de estimar (solo estimar!) el numero total de individuos que se han dado en un anio para un instar.
 
-```{r}
-max_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
-names(max_huevos)[2] <- "max_huevos"
-max_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
-names(max_l1)[2] <- "max_l1"
-max_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
-names(max_l2)[2] <- "max_l2"
-max_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
-names(max_crisalidas)[2] <- "max_crisalidas"
-max_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=max, na.rm=TRUE)
-names(max_exergia)[2] <- "max_exergia"
-
-max_INSTAR <- cbind(max_huevos,max_l1, max_l2, max_crisalidas, max_exergia)
-max_INSTAR <- max_INSTAR[ -c(3,5,7,9) ]
-```
+??
 
 ## Agregacion por minimo
-La agregacion por minimo claramente subestima la poblacion, al menos en huevos, l1, l2 y crisalidas, ya que debido a la estacionalidad de cada fase se dan dias con valores 0, y por tanto el minimo es 0, no siendo este valor representativo de la poblacion ese anio. Si puede tener sentido para exergia, asi que la mantenemos:
 
-```{r}
-#min_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
-# names(min_huevos)[2] <- "min_huevos"
-# min_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
-# names(min_l1)[2] <- "min_l1"
-# min_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
-# names(min_l2)[2] <- "min_l2"
-# min_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
-# names(min_crisalidas)[2] <- "min_crisalidas"
-min_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=min, na.rm=TRUE)
-names(min_exergia)[2] <- "min_exergia"
-
-#min_INSTAR <- cbind(min_huevos,min_l1, min_l2, min_crisalidas, min_exergia)
-min_INSTAR <- cbind(min_exergia)
-#min_INSTAR <- min_INSTAR[ -c(3,5,7,9) ]
-```
+??
 
 ## Agregacion por media
-La agregacion por media tiene el problema de que para dos anios con el mismo numero total de individuos, en un anio con el instar que sea (huevos, l1, l2 o crisalidas) muy repartidos a lo largo del tiempo, la media saldra menor que la de un anio con el mismo numero de individuos pero concentrados en un periodo mas corto de tiempo.
+
+Tiene sentido para energia
 
 ```{r}
-mean_huevos <- aggregate(x = INSTAR_SN$huevos, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
-names(mean_huevos)[2] <- "mean_huevos"
-mean_l1 <- aggregate(x = INSTAR_SN$l1, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
-names(mean_l1)[2] <- "mean_l1"
-mean_l2 <- aggregate(x = INSTAR_SN$l2, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
-names(mean_l2)[2] <- "mean_l2"
-mean_crisalidas <- aggregate(x = INSTAR_SN$crisalidas, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
-names(mean_crisalidas)[2] <- "mean_crisalidas"
-mean_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=mean, na.rm=TRUE)
+mean_exergia <- aggregate(x = INSTAR_bz2$exergia, by=list(biociclo=INSTAR_bz2$biociclo), FUN=mean, na.rm=TRUE)
 names(mean_exergia)[2] <- "mean_exergia"
-
-mean_INSTAR <- cbind(mean_huevos, mean_l1, mean_l2, mean_crisalidas, mean_exergia)
-mean_INSTAR <- mean_INSTAR[ -c(3,5,7,9) ]
 ```
 
-## Exportacion de datos de agregacion
+## Creamos una tabla con todos los datos de agregacion
 ```{r}
-# Creamos una tabla con todos los datos de agregacion y la exportamos
+agreg_INSTAR_bz2 <- cbind(
+  sum_l1,
+  sum_l2,
+  mean_exergia)
+agreg_INSTAR_bz2_biociclo <- agreg_INSTAR_bz2[ -c(3,5) ]
 
-agreg_INSTAR_SN <- cbind(
-  sum_huevos, max_huevos, mean_huevos, 
-  sum_l1, max_l1, mean_l1,
-  sum_l2, max_l2, mean_l2,
-  sum_crisalidas, max_crisalidas,  mean_crisalidas,
-  max_exergia, mean_exergia, min_exergia)
-agreg_INSTAR_SN <- agreg_INSTAR_SN[ -c(3,5,7,9,11,13,15,17,19,21,23,25,27,29) ]
-
-# write.csv(agreg_INSTAR_SN, "agreg_INSTAR_SN.csv", row.names=FALSE, na="")
+#write.csv(agreg_INSTAR_bz2_biociclo, "agreg_INSTAR_bz2_biociclo.csv", row.names=FALSE, na="")
 ```
 
-*FIN FASE DE AGREGACION INSTAR*
+*FIN FASE DE AGREGACION INSTAR POR BIOCICLO PARA SIERRA DE BAZA ZONA 2*
+
+# Agregacion de datos COPLAS: 
+
+Para obtener un valor de COPLAS, hacemos la media ponderada de los rodales. En el caso de la zona 2, esta zona tiene pinos en los rodales 'GR023012' y 'GR023015', con superficies similares. Por tanto, no haria falta ponderar, pero para hacer la prueba le damos el peso que corresponde a cada uno (0.5)
+
+```{r}
+COPLAS_Bz2_completo<-read.csv("zona_baza.csv", header=TRUE, dec =".", sep=",") # Sin agregar, datos brutos seleccionando los rodales oportunos (todo sierra de baza)
+
+boxplot(COPLAS_Bz2_completo$GRADO.REVISADO ~ COPLAS_Bz2_completo$RODAL)
+plot(COPLAS_Bz2_completo$GRADO.REVISADO ~ COPLAS_Bz2_completo$fecha, ylim = c(0,5))
+
+for(i in 1:length(COPLAS_Bz2_completo$RODAL)){
+  ifelse(COPLAS_Bz2_completo$RODAL[i] == "GR023012" | COPLAS_Bz2_completo$RODAL[i] == "GR023015",    COPLAS_Bz2_completo$peso[i] <- 0.5,COPLAS_Bz2_completo$peso[i] <- 1)}
+
+media <- aggregate(x=COPLAS_Bz2_completo[c('GRADO.REVISADO')], by=list(fecha=COPLAS_Bz2_completo$fecha), FUN=mean, na.rm=TRUE)
+varianza <- aggregate(x=COPLAS_Bz2_completo[c('GRADO.REVISADO')], by=list(fecha=COPLAS_Bz2_completo$fecha), FUN=var, na.rm=TRUE)
+
+COPLAS_Bz2_agreg <- cbind(media, varianza$GRADO.REVISADO)
+names(COPLAS_Bz2_agreg)[2] <- "mean"
+names(COPLAS_Bz2_agreg)[3] <- "varianza"
+
+plot(COPLAS_Bz2_agreg$fecha,COPLAS_Bz2_agreg$mean, ylim = c(0,5))
+
+COPLAS_Bz2_agreg$biociclo <- 1:23
+```
+
+*FIN FASE DE AGREGACION PONDERADA DE COPLAS PARA SIERRA DE BAZA ZONA 2*
 
 # Validacion externa
 
 Importacion de datos de agregacion INSTAR
 ```{r}
-agreg_INSTAR_SN<-read.table("agreg_INSTAR_SN.csv", header=T, sep=",", dec=".")
+agreg_INSTAR_bz2_biociclo<-read.table("agreg_INSTAR_bz2_biociclo.csv", header=T, sep=",", dec=".")
 ```
-
-Importacion de COPLAS y exploracion preliminar
-
-**NOTA** la agregación de COPLAS se hizo en otro script y tiene que ser modificada
-```{r}
-COPLAS_SN_completo<-read.csv("cortijuela.csv", header=TRUE, dec =".", sep=",") # Sin agregar, datos brutos
-
-boxplot(COPLAS_SN_completo$GRADO.REVISADO ~ COPLAS_SN_completo$RODAL)
-plot(COPLAS_SN_completo$GRADO.REVISADO ~ COPLAS_SN_completo$fecha)
-
-COPLAS_SN<-read.csv("coplas_cortijuela_prueba.csv", header=TRUE, dec =".", sep=",") # Medias para cada rodal (agregado)
-```
-
-- Es correcto hacer la media (al menos tal y como esta hecha) en una variable discreta como es COPLAS? 
-    -> Entiendo que si, pero habra que usar la media obtenida, no el redondeo 
-    -> Además lo adecuado sería ponderar según la superficie de cada rodal en el total (si tienen tamanios muy diferentes, al hacer la media se esta dando mas peso de la cuenta al pequenio y se esta subestimando el grande)
-
-- En caso de que sea correcto, se debe/hay forma de considerar la varianza en la regresion?
-- Debe considerarse COPLAS de alguna manera especial en la regresion por ser una variable discreta?
-
-Por lo que veo habeis calculado una regresion lineal entre COPLAS e INSTAR, por que esperais una relacion lineal entre ambas variables? Lo ideal seria buscar la funcion que explica dicha relacion, y ver que tipo de funcion (lineal, logaritmica...) es, no? En cualquier caso, quizas lo mas esperable es una funcion logaritmica, como hace Cayuela (hace un glm, pero sobre datos en base logaritmica!). Intuitivamente, yo esperaria que para percibir cierta defoliacion es necesario un numero minimo de individuos, por debajo del cual no se observa defoliacion y a partir de cierta cantidad de individuos la defoliacion es maxima, dando igual si ese valor se sobrepasa por mucho o por poco (si todos los arboles estan defoliados da igual que haya X que X*10 individuos, por lo que ya no hay relacion lineal), por lo que yo esperaria una relacion exponencial.
-
-Me preocupa que hay muchos datos 0 de COPLAS con valores muuuy diferentes de NetLogo... La agregacion juega un papel importante ahi, quizas al usar otra agregacion sale algo mejor (esperemos).
 
 **Puesta en comun (29/08/2016)**
 
@@ -253,25 +307,23 @@ Asumimos que INSTAR(exergia) y COPLAS son la misma variable/miden lo mismo. Así
 - Que se cumplen las asunciones de los modelos parametricos lineales (sobre Y y sobre los errores del modelo lineal), a saber:
   Normalidad: o, al menos, simetria
 ```{r}
-hist(exergia$exergia) # todos los datos de energia
-hist(mean_INSTAR$mean_exergia) # datos medios para cada anio
+hist(INSTAR_bz2$exergia) # todos los datos de energia
+hist(agreg_INSTAR_bz2_biociclo$mean_exergia) # datos medios para cada anio
 ```
   No parecen normales... Ni siquiera simetricos :(
-  El problema puede ser que el tamanio de la muestra es muy pequenio (n=14 en el agregado), aunque entonces el bruto no tendria por que tener el mismo problema.
+  El problema puede ser que el tamanio de la muestra es muy pequenio (n=22 en el agregado), aunque entonces el bruto no tendria por que tener el mismo problema.
   Posible solución: transformacion a una escala diferente (log o potencial)
   
   Homogeneidad de las varianzas: 
 ```{r}
-var_exergia <- aggregate(x = INSTAR_SN$exergia, by=list(anio=INSTAR_SN$anio), FUN=var, na.rm=TRUE)
+var_exergia <- aggregate(x = INSTAR_bz2$exergia, by=list(year=INSTAR_bz2$year), FUN=var, na.rm=TRUE)
 plot(var_exergia)
 ```
-Habria que hacer un test para comprobar si son distintas significativamente, pero a simple vista no lo parece...
+Habria que hacer un test para comprobar si son distintas significativamente, pero a simple vista no lo parece... Quizas cortando desde 1999, considerando que el modelo fluctua en periodo 1993-1999 hasta que se estabiliza
 
   Linealidad
 ```{r}
-ds <- data.frame(cbind(mean_exergia,COPLAS_SN$INFE_AVG[(9:22)]))
-names(ds)[3] <- "INFE_AVG"
-plot(ds$mean_exergia ~ ds$INFE_AVG)
+plot(agreg_INSTAR_bz2_biociclo$mean_exergia ~ COPLAS_Bz2_agreg$mean[(2:23)])
 ```
   ...
   
@@ -279,7 +331,7 @@ plot(ds$mean_exergia ~ ds$INFE_AVG)
 
 De todas formas, aqui va la regresion:
 ```{r}
-reg_exergia_COPLAS <- lm(ds$mean_exergia ~ ds$INFE_AVG)
+reg_exergia_COPLAS <- lm(agreg_INSTAR_bz2_biociclo$mean_exergia ~ COPLAS_Bz2_agreg$mean[(2:23)])
 abline(reg_exergia_COPLAS)
 summary(reg_exergia_COPLAS)
 plot(reg_exergia_COPLAS)
@@ -297,11 +349,11 @@ Ademas de la regresion COPLAS ~ INSTAR(exergia), se decide realizar tambien regr
     Transformamos: Z = Ln(COPLAS)
     Modelo linealizado: Z = ln(a) + (b*INSTAR)
     
-    Para estudir si el modelo logaritmo o exponencial explican/se adecuan a nuestros datos, lo mas facil es transformarlos a la funcion correspondiente, para asi realizar una regresion lineal entre los valores transformados y COPLAS. Entiendo que esto lo hacemos porque es mas facil de evaluar  un modelo lineal (con R2) que uno logaritmico o exponencial.
+    Para estudiar si el modelo logaritmo o exponencial explican/se adecuan a nuestros datos, lo mas facil es transformarlos a la funcion correspondiente, para asi realizar una regresion lineal entre los valores transformados y COPLAS. Entiendo que esto lo hacemos porque es mas facil de evaluar un modelo lineal (con R2) que uno logaritmico o exponencial.
     
 ## Construccion de tabla de datos
 ```{r}
-log_COPLAS <- data.frame(log(ds[3]))
+log_COPLAS <- data.frame(log(COPLAS_Bz2_agreg[c(2:23),2]))
 ds2 <- cbind(sum_l1, sum_l2, log_COPLAS)
 ds2 <- ds2[ -c(3) ]
 names(ds2)[4] <- "log_COPLAS"
@@ -326,6 +378,7 @@ plot(reg_l1_COPLAS)
 dev.off()
 ```
 
+HASTA AQUI
 
 ~~## Transformacion log de datos INSTAR~~
 ~~log_agreg_INSTAR_SN<- data.frame(
