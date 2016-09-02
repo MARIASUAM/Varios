@@ -6,8 +6,12 @@ output: html_document
 ```{r}
 # Definir directorio: si se abre desde "Project" es necesario abrirlo desde el menú (Session>Set working directory>...)
 setwd("C:/DELL/GDrive_2/Instar/calibracion_validacion/fuentes_datos_validacion/COPLAS_PLAGAS/")
+```
+
+```{r}
 library(lubridate)
 ```
+
 
 # Zona 2
 
@@ -45,7 +49,9 @@ INSTAR_bz2$yday <- yday(INSTAR_bz2$fecha) # anadimos el dia del anio con el paqu
 INSTAR_bz2$year <- year(INSTAR_bz2$fecha) # anadimos el anio con el paquete lubridate
 
 INSTAR_bz2$biociclo <- NULL
+```
 
+```{r}
 subset_1993 <- subset(INSTAR_bz2, INSTAR_bz2$year==1993)
 for(i in 1:length(subset_1993$yday)){
   ifelse(subset_1993$yday[i]<=79, 
@@ -228,9 +234,12 @@ La suma de los individuos de cada instar para un mismo anio es una forma de calc
 
 Hacemos la agregacion solo para l1 y l2
 
+**OJO** aggregate aplicada sobre una serie temporal entiende que debe agregar por anio (no hace falta poner el by=...)
+
 ```{r}
 sum_l1<- aggregate(x = INSTAR_bz2$l1, by=list(biociclo=INSTAR_bz2$biociclo), FUN=sum, na.rm=TRUE)
 names(sum_l1)[2] <- "sum_l1"
+
 sum_l2<- aggregate(x = INSTAR_bz2$l2, by=list(biociclo=INSTAR_bz2$biociclo), FUN=sum, na.rm=TRUE)
 names(sum_l2)[2] <- "sum_l2"
 ```
@@ -369,100 +378,61 @@ reg_l1_COPLAS <- lm(ds2$log_COPLAS~ds2$sum_l1)
 
   El problema es que la transformacion da valores "-Inf"... 
   Posible solucion: "Use log(Z+c) where c is an appropiate constant if there are zeros in the data set because you can't take the log of zero. Some people use the smallest possible value for their variable as a constant, others use an arbitrarily small number, such as 0.001". Careful with ANOVA significancies if this solution is applied!
-
+  
+  Usamos el Ln(0.001) = -6.907
+  
 ```{r}
-ds2$log_COPLAS[ds2$log_COPLAS == "-Inf"] <- "-0.001"
+ds2$log_COPLAS[ds2$log_COPLAS == "-Inf"] <- "-6.907755"
+```
+
+Regresion logCOPLAS vs sum_l1
+```{r}
 reg_l1_COPLAS <- lm(ds2$log_COPLAS~ds2$sum_l1)
 summary(reg_l1_COPLAS)
 plot(reg_l1_COPLAS)
 dev.off()
 ```
 
-HASTA AQUI
-
-~~## Transformacion log de datos INSTAR~~
-~~log_agreg_INSTAR_SN<- data.frame(
-  "anio" = agreg_INSTAR_SN$anio,
-  log_sum_huevos = (log(agreg_INSTAR_SN$sum_huevos)),
-  log_max_huevos = (log(agreg_INSTAR_SN$max_huevos)),
-  log_mean_huevos = (log(agreg_INSTAR_SN$mean_huevos)),
-  log_sum_l1 = (log(agreg_INSTAR_SN$sum_l1)),
-  log_max_l1 = (log(agreg_INSTAR_SN$max_l1)),
-  log_mean_l1 = (log(agreg_INSTAR_SN$mean_l1)),
-  log_sum_l2 = (log(agreg_INSTAR_SN$sum_l2)),
-  log_max_l2 = (log(agreg_INSTAR_SN$max_l2)),
-  log_mean_l2 = (log(agreg_INSTAR_SN$mean_l2)),
-  log_sum_crisalidas = (log(agreg_INSTAR_SN$sum_crisalidas)),
-  log_max_crisalidas = (log(agreg_INSTAR_SN$max_crisalidas)),
-  log_mean_crisalidas = (log(agreg_INSTAR_SN$mean_crisalidas)),
-  log_max_exergia = (log(agreg_INSTAR_SN$max_exergia)),
-  log_mean_exergia = (log(agreg_INSTAR_SN$mean_exergia)),
-  log_min_exergia = (log(agreg_INSTAR_SN$min_exergia)))~~
-
-~~## Correlaciones y regresiones
-**La variable independiente (x) son los datos de COPLAS, y la variable dependiente (y) son los datos de Instar:**
-INSTAR = a·COPLAS + b (INSTAR "described by" COPLAS)~~
-
-- Se cumplen las asunciones de una regresion? (normalidad,...) -> Usamos un glm, ya que lm asume que el error de los datos sigue una distribucion normal, mientras que el glm asume que otras distribuciones son posibles.
-- lm o glm? (ver anterior) Hago el lm tambien para ver los R2
-- cor y/o lm/glm? ejemplo de cor: cor(tabla_regresion$log_sum_l1, tabla_regresion$INFE_AVG)
-
-~~# Construccion de tabla~~
-~~tabla_regresion <- cbind(log_agreg_INSTAR_SN, COPLAS_SN[-c((1:8), 23), -c(1,4)])~~
-
-~~# Regresiones glm y resultados~~
-~~reg1_glm  <- glm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg2_glm  <- glm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg3_glm  <- glm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg4_glm  <- glm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg5_glm  <- glm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg6_glm  <- glm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg7_glm  <- glm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg8_glm  <- glm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg9_glm  <- glm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg10_glm <- glm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg11_glm <- glm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg12_glm <- glm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg13_glm <- glm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)~~
-~~reg14_glm <- glm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)~~
-~~reg15_glm <- glm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)~~
-
-~~# Regresiones glm y resultados~~
-~~reg1_lm  <- lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg2_lm  <- lm(tabla_regresion$log_max_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg3_lm  <- lm(tabla_regresion$log_mean_huevos ~ tabla_regresion$INFE_AVG)~~
-~~reg4_lm  <- lm(tabla_regresion$log_sum_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg5_lm  <- lm(tabla_regresion$log_max_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg6_lm  <- lm(tabla_regresion$log_mean_l1 ~ tabla_regresion$INFE_AVG)~~
-~~reg7_lm  <- lm(tabla_regresion$log_sum_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg8_lm  <- lm(tabla_regresion$log_max_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg9_lm  <- lm(tabla_regresion$log_mean_l2 ~ tabla_regresion$INFE_AVG)~~
-~~reg10_lm <- lm(tabla_regresion$log_sum_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg11_lm <- lm(tabla_regresion$log_max_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg12_lm <- lm(tabla_regresion$log_mean_crisalidas ~ tabla_regresion$INFE_AVG)~~
-~~reg13_lm <- lm(tabla_regresion$log_max_exergia ~ tabla_regresion$INFE_AVG)~~
-~~reg14_lm <- lm(tabla_regresion$log_mean_exergia ~ tabla_regresion$INFE_AVG)~~
-~~reg15_lm <- lm(tabla_regresion$log_min_exergia ~ tabla_regresion$INFE_AVG)~~
-
-# Exploracion grafica (ejemplo)
+Regresion logCOPLAS vs sum_l2
 ```{r}
-plot(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG)
-abline(lm(tabla_regresion$log_sum_huevos ~ tabla_regresion$INFE_AVG))
+reg_l2_COPLAS <- lm(ds2$log_COPLAS~ds2$sum_l2)
+summary(reg_l2_COPLAS)
 ```
 
-# Regresion multiple:
+Regresion logCOPLAS vs sum_l1+sum_l2
+```{r}
+ds2$sum_l1l2 <- NULL
+for(i in 1:length(ds2$sum_l1)){
+  ds2$sum_l1l2[i] = ds2$sum_l1[i]+ds2$sum_l2[i]
+}  
 
-No entiendo esto... Si l2 viene de l1, al hacer una regresion multiple l1+l2 (o huevos+l1, o cualquier combinacion de variables de densidad de poblacion), no se esta metiendo una redundancia? Sin embargo, si me parece que podria ser interesante hacer una regresion multiple considerando una variable de densidad de poblacion y una relacionada con las condiciones climaticas (tmin, tmax y/o tmedia), ya que se podria esperar que, por ejemplo, huevos+tmin sea un buen predictor de COPLAS, no?
+reg_multiple_COPLAS <- lm((ds2$log_COPLAS~ds2$sum_l1l2))
+summary(reg_multiple_COPLAS)
+```
 
 # Series temporales  
 
-~~No se muy bien cual es el objetivo de el analisis de series temporales, por lo que quizas lo que digo no tiene sentido, corregidme plis :)~~
+Ya que los datos, tanto de INSTAR como de COPLAS, forman parte de una serie temporal, deben ser tenidos en cuenta como tal, ya que hay mayores correlaciones entre las medidas mas cercanas en el tiempo.
 
-~~Segun lo entiendo, queremos hacer un analisis de series temporales comparando COPLAS e INSTAR, ya que al ser variables que cambian en el tiempo debido a varios factores (condiciones de cada anio, estacionalidad, variabilidad,...) su analisis basado en regresion es limitado.~~
+Primero definimos las series temporales a considerar. Ojo porque COPLAS empieza en 1993 (biociclo 1), mientras que INSTAR debera empezar en 1994 ya que aunque hay datos en 1993, estos forman parte del biociclo 2.
 
-~~En tal caso, creo que es una pena usar datos agregados de INSTAR (perdiendo resolucion) cuando precisamente el analisis como serie temporal nos mostraria la estacionalidad, la tendencia, etc. Por tanto, yo usaria los datos brutos de INSTAR. Ahora, hay un problema, y es que la funcion ts no se lleva bien con los anios bisiestos, ya que la frecuencia tiene que ser un valor fijo para toda la serie (que no para dos series, por lo que no es un problema comparar COPLAS e INSTAR aunque tengan distinta frecuencia). En los foros proponen usar zoo para evitar este problema, que es lo que usamos en Ecoinformqtica, creo... Otra opcion seria eliminar de los datos de INSTAR el 29 de febrero de los anios bisiestos (filas 980, 2441, 3902), aunque parece una solucion poco elegante...~~
+```{r}
+COPLAS_Bz2_ts <-ts(COPLAS_Bz2_agreg[2], start=1993, end=2015, frequency=1)
+plot(COPLAS_Bz2_ts, ylim = c(0,5))
 
-~~En cuanto al error que te sale en el codigo, entiendo que es porque cuando la frecuencia es 1, decompose no funciona ya que no se puede observar estacionalidad si hay una sola medida por anio. Por eso cambiando a freq=2 se elimina el error, pero no es correcto ya que nosotros solo tenemos una medida/anio. Por tanto, yo entiendo que no se puede aplicar la funcion decompose sobre COPLAS, sino que habra que buscar otras herramientas para evaluar tendencias. En cualquier caso, y despues de hablar con Antonio, yo entiendo que lo que habria que hacer es coger los datos de INSTAR, analizarlos (en bruto) como serie temporal, buscando estacionalidad, tendencias, ruido, etc. y quizas comparar esta serie con una serie climatica (tmin, tmax y/o tmedia), de esta manera demostrando que los resultados del modelo guardan relacion con las condiciones climaticas, como se espera del codigo. Si ademas encontramos la forma de analizar series temporales de frecuencia 1 entonces podriamos comparar COPLAS e INSTAR.~~
+acf(COPLAS_Bz2_ts, na.action =na.pass)
+
+agreg_INSTAR_bz2_biociclo_ts <-ts(agreg_INSTAR_bz2_biociclo[2:4], start=1994, end=2015, frequency=1)
+plot(agreg_INSTAR_bz2_biociclo_ts)
+
+acf(agreg_INSTAR_bz2_biociclo_ts, na.action =na.pass)
+```
+
+
+
+HASTA AQUI
+
+
 
 Queremos:
 
@@ -471,26 +441,19 @@ Queremos:
 Problemas metodologicos:
 - COPLAS e INSTAR no tienen la misma frecuencia
 - INSTAR contienen datos diarios, considerando años bisiestos
-- COPLAS tiene anios sin datos (1994 y 1997)
 
 Analisis a realizar:
 - Comparar COPLAS e INSTARagregado: esta opcion debe excluir el analisis de la estacionalidad de los datos, ya que al agregarse a un valor/anio no se podra observar la estacionalidad. Se podra, por tanto, analizar si la tendencia y el ruido son similares. Para esto asumimos que estas series tienen la forma:
 
 x(t) = m(t) + z(t)
 
-**DUDA** no seria este el mismo analisis que la regresion? este parece mas adecuado porque considera cada dato dentro de la serie, y puede afinar mas ya que se estudian tambien las correlaciones entre cada anio, pero en realidad en el mismo (lm o glm COPLAS vs INSTAR)  
+**DUDA** no seria este el mismo analisis que la regresion? este parece mas adecuado porque considera cada dato dentro de la serie, y puede afinar mas ya que se estudian tambien las correlaciones entre anios, pero en realidad en el mismo (lm o glm COPLAS vs INSTAR)  
 
 - Validacion interna del modelo: analisis de la serie temporal de INSTAR y su relacion con las variables climaticas (temperatura). De esta manera, se podran observar la variabilidad estacional de la serie, y compararla con los patrones meteorologicos. Esto requiere solucionar el problema de los anios bisiestos. Opciones: eliminar los datos de los 29 de febrero, agregacion mensual de los datos, usar otros paquetes que consideren series de datos de frecuencia irregular (zoo?), ...?
 
 ## COPLAS vs INSTARagregado
 
-```{r}
-COPLAS_SN_ts <-ts(COPLAS_SN[2], start=1993, end=2015, frequency=1)
-plot(COPLAS_SN_ts)
-decompose(COPLAS_SN_ts) # No se puede hacer porque tiene freq=1 (no puede medir estacionalidad) :(
 
-acf(COPLAS_SN_ts, na.action =na.pass) # By default, no missing values are allowed. If the na.action function passes through missing values (as na.pass does), the covariances are computed from the complete cases. This means that the estimate computed may well not be a valid autocorrelation sequence, and may contain missing values.
-```
 
 Asumimos una relacion exponencial entre COPLAS e INSTAR (no estoy muy segura de esto...):
 
@@ -514,8 +477,7 @@ lm_l2 <- lm(as.vector(log_INSTAR_ts)~ as.vector(COPLAS_SN_ts[9:22,]))
 
 summary(lm_l2)
 plot(lm_l2)
-
-# METER EL dev.off para dividir el espacio!
+dev.off()
 ```
 
 Creo que esto seria lo mismo, solo que con otra sintaxis
@@ -525,7 +487,6 @@ lm_l2 <- lm(intersect$log_INSTAR_ts~intersect$COPLAS_SN_ts)
 ```
 
 Bastante mala relación....
-
 
 plot(as.vector(log_INSTAR_ts), as.vector(COPLAS_SN_ts[9:22,]))
 cor(log_INSTAR_ts, COPLAS_SN_ts[9:22,])
