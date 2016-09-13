@@ -33,5 +33,3 @@ ts_rod_X <- ts(rodal_X$GRADO.REVISADO, start=start_year, end = end_year, frequen
 
 plot(ts_rod_X, xlim= c(1993,2015), ylim = c(0,5), ylab = "COPLAS", xlab="Time") # visualizacion
 ```
-
-

@@ -430,10 +430,6 @@ acf(agreg_INSTAR_bz2_biociclo_ts, na.action =na.pass)
 
 
 
-HASTA AQUI
-
-
-
 Queremos:
 
 - *Cuantificar el grado de ajuste entre los datos de INSTAR y COPLAS*
@@ -452,8 +448,6 @@ x(t) = m(t) + z(t)
 - Validacion interna del modelo: analisis de la serie temporal de INSTAR y su relacion con las variables climaticas (temperatura). De esta manera, se podran observar la variabilidad estacional de la serie, y compararla con los patrones meteorologicos. Esto requiere solucionar el problema de los anios bisiestos. Opciones: eliminar los datos de los 29 de febrero, agregacion mensual de los datos, usar otros paquetes que consideren series de datos de frecuencia irregular (zoo?), ...?
 
 ## COPLAS vs INSTARagregado
-
-
 
 Asumimos una relacion exponencial entre COPLAS e INSTAR (no estoy muy segura de esto...):
 
@@ -491,18 +485,17 @@ Bastante mala relación....
 plot(as.vector(log_INSTAR_ts), as.vector(COPLAS_SN_ts[9:22,]))
 cor(log_INSTAR_ts, COPLAS_SN_ts[9:22,])
 
-## Analisis de INSTARbruto (Con "ts", eliminando 29 de febrero)
+## INSTAR_bz2 como ts (datos completos)
 
-INSTAR:
 ```{r}
-INSTAR_SN_sinbisestos <- INSTAR_SN[-c(980,2441,3902),]
-# INSTAR_SN_ts <- ts(INSTAR_SN_sinbisestos[2:6], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts todo el conjunto de datos 
-INSTAR_SN_ts_huevos <- ts(INSTAR_SN_sinbisestos[2], start=c(2001,176), end=c(2014,161), freq=365) # Definimos como ts cada variable por separado
-plot(INSTAR_SN_ts_huevos)
-plot(decompose(INSTAR_SN_ts_huevos, type = c("additive")))
-plot(decompose(INSTAR_SN_ts_huevos, type = c("multiplicative")))
+INSTAR_bz2_sinbisestos <- INSTAR_bz2[-c(979,2440,3901,5362, 6823),] # Eliminamos los 29 de febrero (anios 1996, 2000, 2004, 2008, 2012)
 
-ts.intersect(INSTAR_SN_ts_huevos,COPLAS_SN_ts) # No se puede hacer si no tienen la misma frecuencia... :(
+bz2_ts_l1 <-ts(INSTAR_bz2[3], start=c(1993,177), end=c(2014, 365), frequency=365) # Definimos como ts cada variable por separado
+
+plot(bz2_ts_l1)
+plot(decompose(bz2_ts_l1, type = c("additive")))
+plot(decompose(bz2_ts_l1, type = c("multiplicative")))
+
 ```
 
 > "If the seasonal effect tends to increase as the trend increases, a multiplicative model may be more appropriate"- --> Quizás multiplicative es más correcto en nuestro caso? Ver página 20 en "Introductory Time Series with R":
@@ -510,25 +503,103 @@ ts.intersect(INSTAR_SN_ts_huevos,COPLAS_SN_ts) # No se puede hacer si no tienen 
 
 Análisis exploratorio:
 ```{r}
-aggregate(INSTAR_SN_ts_huevos)
-plot(aggregate(INSTAR_SN_ts_huevos))
-acf(INSTAR_SN_ts_huevos)
-
-
-plot(decompose(INSTAR_SN_ts_huevos, type ="mult"))
-# o lo mismo:
-# huevos.decom <- decompose(INSTAR_SN_ts_huevos, type ="mult") 
-# plot(huevos.decom)
-trend <- huevos.decom$trend
-seasonal <- huevos.decom$seasonal
-random <- huevos.decom$random
-
-ts.plot(cbind(trend,trend*seasonal, trend*random),col=c("black", "red", "blue"), main="cbind(trend,trend*seasonal, trend*random") 
-legend("topright",legend=c("trend","trend*seasonal", "trend*random"), text.col=c("black","red", "blue"), col=c("black","red", "blue"))
+plot(aggregate(bz2_ts_l1))
+acf(bz2_ts_l1)
 ```
-**NOTAS**
-start = 176 porque el 25 de junio de un anio no bisiesto es el dia 176 del anio
-end = 161 porque el 10 de junio de un anio no bisiesto es el dia 161 del anio
+
+## Búsqueda de variables relevantes:
+```{r}
+# Valor maximo de huevos (pico)
+
+max_huevos <- merge(aggregate(huevo ~ biociclo, data = INSTAR_bz2_sinbisestos, FUN = max), INSTAR_bz2_sinbisestos)
+max_huevos <- max_huevos[ -c(3:7,9) ]
+names(max_huevos)[2] <- "max_huevos"
+
+mean(max_huevos$yday) # comparar con criterio experto/diagrama Demolin
+sd(max_huevos$yday)
+
+# Valor maximo de l1 (pico)
+
+max_l1 <- merge(aggregate(l1 ~ biociclo, data = INSTAR_bz2_sinbisestos, FUN = max), INSTAR_bz2_sinbisestos) 
+max_l1 <- max_l1[ -c(3:7,9) ]
+names(max_l1)[2] <- "max_l1"
+
+mean(max_l1$yday) # comparar con criterio experto/diagrama Demolin
+sd(max_l1$yday)
+
+# Valor maximo de l2 (pico)
+
+max_l2 <- merge(aggregate(l2 ~ biociclo, data = INSTAR_bz2_sinbisestos, FUN = max), INSTAR_bz2_sinbisestos) 
+max_l2 <- max_l2[ -c(3:7,9) ]
+names(max_l2)[2] <- "max_l2"
+
+mean(max_l2$yday) # comparar con criterio experto/diagrama Demolin
+sd(max_l2$yday)
+
+# Valor maximo de crisalida (pico)
+
+max_crisalidas <- merge(aggregate(crisalida ~ biociclo, data = INSTAR_bz2_sinbisestos, FUN = max), INSTAR_bz2_sinbisestos) 
+max_crisalidas <- max_crisalidas[ -c(3:7,9) ]
+names(max_crisalidas)[2] <- "max_crisalidas"
+
+mean(max_crisalidas$yday) # comparar con criterio experto/diagrama Demolin
+sd(max_crisalidas$yday)
+
+# Valor minimo de exergia (valle)
+
+min_exergia <- merge(aggregate(exergia ~ biociclo, data = INSTAR_bz2_sinbisestos, FUN = max), INSTAR_bz2_sinbisestos) 
+min_exergia <- min_exergia[ -c(3:7,9) ]
+names(min_exergia)[2] <- "min_exergia"
+
+mean(min_exergia$yday) # comparar con criterio experto/diagrama Demolin
+sd(min_exergia$yday)
+```
+
+Se observa mucha variacion en los datos (sd y var muy altas). Ya que los primeros biociclos son de calentamiento y, sobre todo, que el biociclo 2 no está completo, vamos a ver como salen las medias si no contamos los ciclos 2 y 3, ni el 23 que tampoco esta completo:
+
+```{r}
+INSTAR_subset <- subset(INSTAR_bz2_sinbisestos, subset = INSTAR_bz2_sinbisestos$biociclo >= 4 & INSTAR_bz2_sinbisestos$biociclo<23)
+```
+
+```{r}
+max_huevos_subset <- merge(aggregate(huevo ~ biociclo, data = INSTAR_subset, FUN = max), INSTAR_subset)
+max_huevos_subset <- max_huevos_subset[ -c(3:7,9) ]
+names(max_huevos_subset)[2] <- "max_huevos_subset"
+
+mean(max_huevos_subset$yday) # comparar con criterio experto/diagrama Demolin
+sd(max_huevos_subset$yday)
+
+plot(max_huevos$max_huevos ~ max_huevos$yday, xlim=c(0,365), ylim = c(0,1300000))
+
+plot(max_huevos_subset$max_huevos ~ max_huevos_subset$yday, xlim=c(0,365), ylim = c(0,1300000))
+```
+
+## Búsqueda del primer y último dato distinto de 0 en cada ciclo - cuando empieza la curva y cuando acaba?
+
+Queremos una tabla tal que asi:
+
+"biociclo", "inicio_valor", "inicio_yday"
+3, ..., ...
+4, ..., ...
+...
+
+num_biociclo <- 5
+biociclo <- subset(INSTAR_bz2, INSTAR_bz2$biociclo==num_biociclo)
+
+for(i in 1:length(biociclo$l1)){
+  if(biociclo$l1[i]==0) next
+  else print(biociclo$yday[i]); break}
+
+biociclo_2 <- seq(3,22)
+inicio <- NULL
+
+l1_inicio_bio2 <- c(num_biociclo, min(vector, na.rm = T), max(vector, na.rm = T))
+
+# Valor minimo distinto de 0
+```{r}
+mi_minimo <- function(columna){min(columna[columna>0])}
+min_huevos <- merge(aggregate(huevo ~ biociclo, data = INSTAR_bz2, FUN = mi_minimo), INSTAR_bz2)
+```
 
 ## Datos de temperatura 
 ```{r}
@@ -556,55 +627,9 @@ dev.off()
 
 ```
 
-
 > plot(decompose(Elec.ts))
 > Elec.decom <- decompose(Elec.ts, type = "mult")
 > plot(Elec.decom)
 > Trend <- Elec.decom$trend
 > Seasonal <- Elec.decom$seasonal
 > ts.plot(cbind(Trend, Trend * Seasonal), lty = 1:2)
-
-
-# Pruebas de plots:
-
-ts.plot(INSTAR_SN_ts_huevos, tmax_sn_ts, tmin_sn_ts, tmedia_sn_ts, col=c("black", "red", "blue", "orange"))
-
-ts.plot(INSTAR_SN_ts_huevos, axes=FALSE, ylim=c(0,1500000), ylab="huevos")
-par(new=TRUE) # Allow a second plot on the same graph
-
-ts.plot(tmax_sn_ts, tmin_sn_ts, tmedia_sn_ts, pch=15, col=c("red", "blue", "orange"), ylab="temperature", ylim=c(0,30), axes=FALSE) # Plot the second plot
-
-legend("topright",legend=c("huevos","tmax", "tmin", "tmedia"), text.col=c("black","red", "blue", "orange"), col=c("black","red", "blue", "orange")) # Add Legend
-
-ts.plot(cbind(trend,trend*seasonal, trend*random),lty=1:2) # lty 
-gives different line types,
-
-# Pruebas (basado en el reto final de ecoinformatica)
-```{r}
-## Exploratory plot
-plot(INSTAR_SN$fecha, INSTAR_SN$huevos, type='o', 
-      xlab='year', pch=19, col='#325B84',
-      ylab='huevos', ylim=c(0,1500000))
-
-## Trend analysis
-
-library('Kendall') 
-m <- MannKendall(INSTAR_SN$huevos)
-m
-
-# Considera la serie como valores puntuales (no medidas diarias) por lo que no encuentra tendencia ya que sube y baja en cada anio (tiene estacionalidad)
-
-### Test a linear regression
-ml <- lm(INSTAR_SN$fecha~INSTAR_SN$huevos)
-summary(ml) # ERROR: no sabe hacer un lm sobre una fecha
-
-huevos_zoo <- zoo(INSTAR_SN$fecha~INSTAR_SN$huevos)
-
-#Definimos la tabla como serie temporal - cada fila es una serie
-str(huevos_zoo)
-View(huevos_zoo)
-
-huevos_theil <- mannKen(as.ts(huevos_zoo)) #Ejecutamos el test
-View(nieve_theil)
-nieve_theil<-as.data.frame(nieve_theil)
-```
